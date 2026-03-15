@@ -1,36 +1,53 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PhoneStore.Data;
+using PhoneStore.Models;
 
 namespace PhoneStore.Controllers
 {
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Staff,Admin")]
     public class StaffController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public StaffController(ApplicationDbContext context)
+        public StaffController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        public async Task<IActionResult> OrderManagement()
+        // Chỉ hiển thị đơn hàng thuộc chi nhánh của nhân viên đang đăng nhập
+        public async Task<IActionResult> MyBranchOrders()
         {
-            var orders = await _context.Orders.OrderByDescending(o => o.OrderDate).ToListAsync();
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            // Nếu là Admin thì thấy hết, nếu là Staff thì lọc theo BranchId
+            var query = _context.Orders.AsQueryable();
+            if (!User.IsInRole("Admin"))
+            {
+                query = query.Where(o => o.BranchId == currentUser.BranchId);
+            }
+
+            var orders = await query.OrderByDescending(o => o.OrderDate).ToListAsync();
             return View(orders);
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateStatus(int orderId, string status)
+        public async Task<IActionResult> UpdateStock(int productId, int quantityChange)
         {
-            var order = await _context.Orders.FindAsync(orderId);
-            if (order != null)
+            var user = await _userManager.GetUserAsync(User);
+            var inventory = await _context.Inventories
+                .FirstOrDefaultAsync(i => i.ProductId == productId && i.BranchId == user.BranchId);
+
+            if (inventory != null)
             {
-                order.Status = status;
-                await _context.SaveChangesAsync(); // Lệnh này giờ sẽ chạy mượt mà
+                inventory.StockQuantity += quantityChange;
+                await _context.SaveChangesAsync();
             }
-            return RedirectToAction(nameof(OrderManagement));
+            return RedirectToAction("Index", "Home");
         }
     }
 }
