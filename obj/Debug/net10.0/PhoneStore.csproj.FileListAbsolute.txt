@@ -337,3 +337,4 @@ D:\Đồ án ASP.NET\PhoneStore\PhoneStore\obj\Debug\net10.0\refint\PhoneStore.d
 D:\Đồ án ASP.NET\PhoneStore\PhoneStore\obj\Debug\net10.0\PhoneStore.pdb
 D:\Đồ án ASP.NET\PhoneStore\PhoneStore\obj\Debug\net10.0\PhoneStore.genruntimeconfig.cache
 D:\Đồ án ASP.NET\PhoneStore\PhoneStore\obj\Debug\net10.0\ref\PhoneStore.dll
+D:\Đồ án ASP.NET\PhoneStore\PhoneStore\obj\Debug\net10.0\PhoneStore.sourcelink.json
