@@ -1,0 +1,47 @@
+﻿@model IEnumerable<PhoneStore.Models.Order>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Danh sách đơn hàng cần xử lý</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>#@item.Id</td>
+                        <td>@item.CustomerName</td>
+                        <td>@item.OrderDate.ToString("dd/MM/yyyy")</td>
+                        <td>@item.TotalAmount.ToString("N0") đ</td>
+                        <td>
+                            <span class="badge @(item.Status == "Pending" ? "bg-warning" : "bg-success")">@item.Status</span>
+                        </td>
+                        <td>
+                            <form asp-action="UpdateOrderStatus" method="post" class="d-inline">
+                                <input type="hidden" name="orderId" value="@item.Id" />
+                                <select name="status" onchange="this.form.submit()" class="form-select form-select-sm">
+                                    <option>-- Đổi trạng thái --</option>
+                                    <option value="Confirmed">Xác nhận đơn</option>
+                                    <option value="Shipping">Đang giao hàng</option>
+                                    <option value="Success">Thành công</option>
+                                    <option value="Cancelled">Hủy đơn</option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

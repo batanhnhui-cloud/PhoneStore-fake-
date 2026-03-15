@@ -5,34 +5,89 @@ using PhoneStore.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+// --- 1. CẤU HÌNH DATABASE (SQL SERVER) ---
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Không tìm thấy chuỗi kết nối 'DefaultConnection'.");
 
-// QUAN TRỌNG: Phải dùng ApplicationUser
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// --- 2. CẤU HÌNH IDENTITY (Xác thực & Phân quyền) ---
+// Sử dụng ApplicationUser để hỗ trợ thuộc tính BranchId (Chi nhánh)
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
+    // Cấu hình mật khẩu đơn giản để thuận tiện cho việc làm đồ án
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 4;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+
+    options.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// --- 3. CẤU HÌNH COOKIE CHO LOGIN TÙY CHỈNH ---
+// Giúp hệ thống biết đường dẫn đến AccountController/Login của bạn
+builder.Services.ConfigureApplicationCookie(options => {
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
+
+// --- 4. CẤU HÌNH SESSION (Dành cho Giỏ hàng) ---
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options => {
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// --- 5. ĐĂNG KÝ CÁC DỊCH VỤ MVC ---
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+// --- 6. KHỞI TẠO DỮ LIỆU (SEED DATA) ---
+// Tự động tạo Roles (Admin, Staff, Customer) và tài khoản Admin mặc định
 using (var scope = app.Services.CreateScope())
 {
-    await DbInitializer.SeedRolesAndAdminAsync(scope.ServiceProvider);
+    var services = scope.ServiceProvider;
+    try
+    {
+        await DbInitializer.SeedRolesAndAdminAsync(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Lỗi khi khởi tạo dữ liệu mẫu (Seeding).");
+    }
 }
 
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
+// --- 7. CẤU HÌNH HTTP REQUEST PIPELINE ---
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
 
-app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+// LƯU Ý: Session phải đặt TRƯỚC Authentication
+app.UseSession();
+
+app.UseAuthentication(); // Ai là người đang truy cập?
+app.UseAuthorization();  // Người đó có quyền làm gì?
+
+// --- 8. CẤU HÌNH ROUTING ---
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapRazorPages();
+
 app.Run();
