@@ -24,6 +24,11 @@ namespace PhoneStore.Models
         [EmailAddress(ErrorMessage = "Email không hợp lệ")]
         public string Email { get; set; }
 
+        // --- TRƯỜNG MỚI THÊM: SỐ ĐIỆN THOẠI ---
+        [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
+        [RegularExpression(@"^(0[3|5|7|8|9])+([0-9]{8})$", ErrorMessage = "Số điện thoại không hợp lệ (Phải bắt đầu bằng 0 và có 10 số)")]
+        public string PhoneNumber { get; set; }
+
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         [DataType(DataType.Password)]
         public string Password { get; set; }

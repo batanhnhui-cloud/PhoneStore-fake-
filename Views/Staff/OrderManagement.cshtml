@@ -4,7 +4,18 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2 class="fw-bold text-primary mb-4"><i class="fa fa-list-alt me-2"></i>Danh sách đơn hàng</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary"><i class="fa fa-list-alt me-2"></i>Danh sách đơn hàng</h2>
+    <span class="badge bg-secondary p-2">Tổng số: @Model.Count() đơn</span>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success fw-bold shadow-sm alert-dismissible fade show" role="alert">
+        <i class="fa fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
 <div class="card shadow border-0">
     <div class="card-body p-0">
@@ -19,40 +30,64 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @if (!Model.Any())
                 {
                     <tr>
-                        <td class="ps-4">
-                            <div class="fw-bold">@item.CustomerName</div>
-                            <div class="small text-muted"><i class="fa fa-phone me-1"></i>@item.Phone</div>
-                            <div class="small text-muted"><i class="fa fa-map-marker-alt me-1"></i>@item.Address</div>
-                        </td>
-                        <td>
-                            <ul class="list-unstyled mb-0 small">
-                                @foreach (var detail in item.OrderDetails)
-                                {
-                                    <li>- @detail.Product?.Name <span class="badge bg-light text-dark">x@detail.Quantity</span></li>
-                                }
-                            </ul>
-                        </td>
-                        <td class="text-danger fw-bold">@item.TotalAmount.ToString("N0") đ</td>
-                        <td>
-                            <span class="badge @(item.Status == "Success" ? "bg-success" : item.Status == "Cancelled" ? "bg-danger" : "bg-warning text-dark")">
-                                @item.Status
-                            </span>
-                        </td>
-                        <td class="text-end pe-4">
-                            <form asp-action="UpdateOrderStatus" method="post" class="d-inline-flex">
-                                <input type="hidden" name="orderId" value="@item.Id" />
-                                <select name="status" class="form-select form-select-sm me-1">
-                                    <option value="Pending" selected="@(item.Status == "Pending")">Chờ</option>
-                                    <option value="Success" selected="@(item.Status == "Success")">Xong</option>
-                                    <option value="Cancelled" selected="@(item.Status == "Cancelled")">Hủy</option>
-                                </select>
-                                <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
-                            </form>
-                        </td>
+                        <td colspan="5" class="text-center py-5 text-muted">Chưa có đơn hàng nào.</td>
                     </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-primary">@item.CustomerName</div>
+                                <div class="small text-muted"><i class="fa fa-phone me-1"></i>@item.Phone</div>
+                                <div class="small text-muted"><i class="fa fa-map-marker-alt me-1"></i>@item.Address</div>
+                                <div class="small text-muted mt-1"><i class="fa fa-clock me-1"></i>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</div>
+                            </td>
+                            <td>
+                                <ul class="list-unstyled mb-0 small">
+                                    @foreach (var detail in item.OrderDetails)
+                                    {
+                                        <li>- @detail.Product?.Name <span class="badge bg-light text-dark border">x@detail.Quantity</span></li>
+                                    }
+                                </ul>
+                            </td>
+                            <td class="text-danger fw-bold">@item.TotalAmount.ToString("N0") đ</td>
+                            <td>
+                                @{
+                                    var badgeClass = item.Status switch
+                                    {
+                                        "Pending" => "bg-warning text-dark",
+                                        "Success" => "bg-success",
+                                        "Cancelled" => "bg-danger",
+                                        _ => "bg-secondary"
+                                    };
+                                    var statusText = item.Status switch
+                                    {
+                                        "Pending" => "Chờ xử lý",
+                                        "Success" => "Hoàn thành",
+                                        "Cancelled" => "Hủy đơn",
+                                        _ => item.Status
+                                    };
+                                }
+                                <span class="badge @badgeClass">@statusText</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <form asp-action="UpdateOrderStatus" method="post" class="d-inline-flex">
+                                    <input type="hidden" name="orderId" value="@item.Id" />
+                                    <select name="status" class="form-select form-select-sm me-1" style="width: 120px;">
+                                        <option value="Pending" selected="@(item.Status == "Pending")">Chờ xử lý</option>
+                                        <option value="Success" selected="@(item.Status == "Success")">Hoàn thành</option>
+                                        <option value="Cancelled" selected="@(item.Status == "Cancelled")">Hủy đơn</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>

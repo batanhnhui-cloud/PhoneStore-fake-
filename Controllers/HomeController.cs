@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PhoneStore.Data;
+using PhoneStore.Models;
+using System.Diagnostics;
 
 namespace PhoneStore.Controllers
 {
@@ -13,27 +15,27 @@ namespace PhoneStore.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(string searchString, int? categoryId)
+        public async Task<IActionResult> Index()
         {
-            // 1. Lấy tất cả sản phẩm
-            var products = _context.Products.Include(p => p.Category).AsQueryable();
+            // Lấy 12 sản phẩm mới nhất đưa ra trang chủ
+            var products = await _context.Products
+                .Include(p => p.Category)
+                .OrderByDescending(p => p.Id)
+                .Take(12)
+                .ToListAsync();
 
-            // 2. Lọc theo từ khóa tìm kiếm
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                products = products.Where(s => s.Name.Contains(searchString));
-            }
+            return View(products);
+        }
 
-            // 3. Lọc theo hãng (Category)
-            if (categoryId.HasValue)
-            {
-                products = products.Where(x => x.CategoryId == categoryId);
-            }
+        public IActionResult Privacy()
+        {
+            return View();
+        }
 
-            // Gửi danh sách hãng sang View để làm menu lọc
-            ViewBag.Categories = await _context.Categories.ToListAsync();
-
-            return View(await products.ToListAsync());
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

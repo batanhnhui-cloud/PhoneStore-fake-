@@ -57,5 +57,75 @@ namespace PhoneStore.Controllers
             if (inv != null) { inv.StockQuantity += adjustment; if (inv.StockQuantity < 0) inv.StockQuantity = 0; await _context.SaveChangesAsync(); }
             return RedirectToAction(nameof(Inventory));
         }
+
+        // ==========================================
+        // TÍNH NĂNG BÁN HÀNG TẠI QUẦY (POS)
+        // ==========================================
+
+        [HttpGet]
+        public async Task<IActionResult> POS()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            // Chỉ lấy các sản phẩm CÒN HÀNG tại chi nhánh của nhân viên này
+            var inventory = await _context.Inventories
+                .Include(i => i.Product)
+                .Where(i => i.BranchId == user.BranchId && i.StockQuantity > 0)
+                .ToListAsync();
+
+            ViewBag.Inventory = inventory;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckoutPOS(string customerName, string phone, int productId, int quantity)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var product = await _context.Products.FindAsync(productId);
+            var inv = await _context.Inventories.FirstOrDefaultAsync(i => i.ProductId == productId && i.BranchId == user.BranchId);
+
+            // 1. Kiểm tra kho
+            if (inv == null || inv.StockQuantity < quantity)
+            {
+                TempData["ErrorMessage"] = "Lỗi: Số lượng trong kho không đủ để bán!";
+                return RedirectToAction(nameof(POS));
+            }
+
+            // 2. Trừ tồn kho ngay lập tức
+            inv.StockQuantity -= quantity;
+
+            // 3. Tạo hóa đơn (Ghi nhận nhân viên nào đã bán để tính KPI sau này)
+            var order = new Order
+            {
+                UserId = user.Id, // Lấy ID của nhân viên đang thao tác
+                CustomerName = customerName + " (Khách mua tại quầy)",
+                Phone = phone,
+                Address = "Mua trực tiếp tại chi nhánh",
+                BranchId = user.BranchId,
+                TotalAmount = product.Price * quantity,
+                Status = "Success", // Đơn tại quầy mặc định là thành công
+                OrderDate = DateTime.Now
+            };
+
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync(); // Lưu để lấy ID Đơn hàng
+
+            // 4. Lưu chi tiết máy khách mua
+            var detail = new OrderDetail
+            {
+                OrderId = order.Id,
+                ProductId = productId,
+                Quantity = quantity,
+                Price = product.Price
+            };
+
+            _context.OrderDetails.Add(detail);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Đã chốt đơn thành công cho khách {customerName}!";
+            return RedirectToAction(nameof(OrderManagement));
+        }
+
     }
 }

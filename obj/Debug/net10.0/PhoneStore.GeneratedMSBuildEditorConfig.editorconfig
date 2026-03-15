@@ -50,8 +50,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ3JlYXRlU3RhZmYuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Admin/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRGFzaGJvYXJkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Admin/EditBranch.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRWRpdEJyYW5jaC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Admin/EditCustomer.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRWRpdEN1c3RvbWVyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Admin/EditStaff.cshtml]
@@ -62,8 +70,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlQnJhbmNoZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Admin/ManageCustomers.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlQ3VzdG9tZXJzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Admin/ManageInventory.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlSW52ZW50b3J5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Admin/ManageStaff.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWFuYWdlU3RhZmYuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Admin/OrderManagement.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cT3JkZXJNYW5hZ2VtZW50LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Admin/RevenueReport.cshtml]
@@ -168,6 +188,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Staff/OrderManagement.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RhZmZcT3JkZXJNYW5hZ2VtZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/Staff/POS.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RhZmZcUE9TLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Đồ án ASP.NET - Copy/PhoneStore/PhoneStore/Views/_ViewImports.cshtml]

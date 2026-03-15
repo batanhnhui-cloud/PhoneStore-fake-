@@ -1,0 +1,94 @@
+﻿@model IEnumerable<PhoneStore.Models.Order>
+@{
+    ViewData["Title"] = "Quản lý Đơn hàng Toàn quốc";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary"><i class="fa fa-list-alt me-2"></i>Đơn hàng Toàn hệ thống</h2>
+    <span class="badge bg-secondary p-2 fs-6">Tổng số: @Model.Count() đơn</span>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success fw-bold shadow-sm alert-dismissible fade show" role="alert">
+        <i class="fa fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-4">Khách hàng</th>
+                        <th>Chi nhánh phụ trách</th>
+                        <th>Chi tiết máy</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end pe-4">Xử lý</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="6" class="text-center py-5 text-muted">Chưa có đơn hàng nào trên hệ thống.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-primary">@item.CustomerName</div>
+                                    <div class="small text-muted"><i class="fa fa-phone me-1"></i>@item.Phone</div>
+                                    <div class="small text-muted"><i class="fa fa-map-marker-alt me-1"></i>@item.Address</div>
+                                    <div class="small text-muted mt-1"><i class="fa fa-clock me-1"></i>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</div>
+                                </td>
+                                <td><span class="badge bg-info text-dark shadow-sm"><i class="fa fa-store me-1"></i>@(item.Branch?.Name ?? "Vãng lai")</span></td>
+                                <td>
+                                    <ul class="list-unstyled mb-0 small">
+                                        @foreach (var detail in item.OrderDetails)
+                                        {
+                                            <li>- @detail.Product?.Name <span class="badge bg-light text-dark border">x@detail.Quantity</span></li>
+                                        }
+                                    </ul>
+                                </td>
+                                <td class="text-danger fw-bold">@item.TotalAmount.ToString("N0") đ</td>
+                                <td>
+                                    @{
+                                        var badgeClass = item.Status switch { "Pending" => "bg-warning text-dark", "Success" => "bg-success", "Cancelled" => "bg-danger", _ => "bg-secondary" };
+                                        var statusText = item.Status switch { "Pending" => "Chờ xử lý", "Success" => "Hoàn thành", "Cancelled" => "Hủy đơn", _ => item.Status };
+                                    }
+                                    <span class="badge @badgeClass fs-6 px-2 py-1 shadow-sm">@statusText</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end align-items-center">
+                                        <form asp-action="UpdateOrderStatus" method="post" class="d-inline-flex me-2">
+                                            <input type="hidden" name="orderId" value="@item.Id" />
+                                            <select name="status" class="form-select form-select-sm me-1" style="width: 120px;">
+                                                <option value="Pending" selected="@(item.Status == "Pending")">Chờ xử lý</option>
+                                                <option value="Success" selected="@(item.Status == "Success")">Hoàn thành</option>
+                                                <option value="Cancelled" selected="@(item.Status == "Cancelled")">Hủy đơn</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
+                                        </form>
+
+                                        <form asp-action="DeleteOrder" method="post" class="d-inline-flex" onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn đơn hàng này không?');">
+                                            <input type="hidden" name="orderId" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Xóa đơn hàng">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

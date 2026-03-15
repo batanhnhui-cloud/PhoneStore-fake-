@@ -1,0 +1,81 @@
+﻿@model IEnumerable<PhoneStore.Models.CustomerViewModel>
+@{
+    ViewData["Title"] = "Quản lý Khách hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary"><i class="fa fa-users me-2"></i>Danh sách Khách hàng</h2>
+    <span class="badge bg-secondary p-2 fs-6">Tổng: @Model.Count() khách hàng</span>
+</div>
+
+<div class="card shadow border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-4">Khách hàng</th>
+                        <th>Liên hệ</th>
+                        <th class="text-center">Số đơn</th>
+                        <th class="text-end">Tổng chi tiêu</th>
+                        <th class="text-center">Hạng thành viên</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">Chưa có khách hàng nào đăng ký hệ thống.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-primary">
+                                    <i class="fa fa-user-circle me-2 text-muted"></i>@item.FullName
+                                </td>
+                                <td>
+                                    <div class="small"><i class="fa fa-envelope me-1 text-muted"></i>@item.Email</div>
+                                    <div class="small mt-1"><i class="fa fa-phone me-1 text-muted"></i>@item.PhoneNumber</div>
+                                </td>
+                                <td class="text-center fw-bold">@item.TotalOrders</td>
+                                <td class="text-end text-danger fw-bold">@item.TotalSpent.ToString("N0") đ</td>
+                                <td class="text-center">
+                                    @{
+                                        var badgeClass = item.Rank switch
+                                        {
+                                            "VÀNG" => "bg-warning text-dark",
+                                            "BẠC" => "bg-secondary",
+                                            _ => "bg-info text-dark"
+                                        };
+                                        var icon = item.Rank switch
+                                        {
+                                            "VÀNG" => "fa-crown",
+                                            "BẠC" => "fa-medal",
+                                            _ => "fa-star"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass fs-6 px-3 py-2 shadow-sm">
+                                        <i class="fa @icon me-1"></i> @item.Rank
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a asp-action="EditCustomer" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    <a asp-action="DeleteCustomer" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger ms-1" onclick="return confirm('Bạn có chắc chắn muốn xóa khách hàng này? Mọi dữ liệu liên quan có thể bị ảnh hưởng.');">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
