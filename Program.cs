@@ -4,14 +4,14 @@ using PhoneStore.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Cấu hình Connection String
+// 1. Kết nối Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// 2. Cấu hình Identity (Bắt buộc để dùng Role và Login)
+// 2. Đăng ký Identity (QUAN TRỌNG: Phải có IdentityRole)
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => {
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 6;
@@ -27,14 +27,13 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// 3. Tự động khởi tạo Roles (Admin, Staff, Customer)
+// 3. Khởi tạo Roles và Admin tự động
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     await DbInitializer.SeedRolesAndAdminAsync(services);
 }
 
-// 4. Cấu hình Pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -46,8 +45,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); // Đăng nhập
-app.UseAuthorization();  // Phân quyền
+// 4. Thứ tự bắt buộc: Authentication TRƯỚC Authorization
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

@@ -9,7 +9,6 @@ namespace PhoneStore.Data
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-            // Tạo các vai trò
             string[] roleNames = { "Admin", "Staff", "Customer" };
             foreach (var roleName in roleNames)
             {
@@ -19,17 +18,11 @@ namespace PhoneStore.Data
                 }
             }
 
-            // Tạo Admin mặc định
             var adminEmail = "admin@phonestore.com";
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
             if (adminUser == null)
             {
-                var user = new IdentityUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true
-                };
+                var user = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
                 await userManager.CreateAsync(user, "Admin@123");
                 await userManager.AddToRoleAsync(user, "Admin");
             }
