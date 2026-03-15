@@ -1,31 +1,39 @@
 ﻿@model IEnumerable<PhoneStore.Models.Branch>
+@{
+    ViewData["Title"] = "Quản lý Chi nhánh";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Hệ thống Chi nhánh</h2>
-    <a asp-action="CreateBranch" class="btn btn-primary">+ Thêm chi nhánh mới</a>
+    <h2 class="fw-bold text-primary"><i class="fa fa-building me-2"></i>Hệ thống Chi nhánh</h2>
+    <a asp-action="CreateBranch" class="btn btn-success"><i class="fa fa-plus me-1"></i> Thêm chi nhánh mới</a>
 </div>
 
-<table class="table table-hover bg-white shadow-sm rounded">
-    <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>Tên Chi Nhánh</th>
-            <th>Địa chỉ</th>
-            <th>Thao tác</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Id</td>
-                <td><strong>@item.Name</strong></td>
-                <td>@item.Address</td>
-                <td>
-                    <a class="btn btn-sm btn-outline-info">Sửa</a>
-                    <a class="btn btn-sm btn-outline-danger">Đóng cửa</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="card shadow border-0">
+    <div class="card-body p-0">
+        <table class="table table-hover table-striped mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">Mã CN</th>
+                    <th>Tên Chi Nhánh</th>
+                    <th>Địa chỉ</th>
+                    <th class="text-end pe-4">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="ps-4 fw-bold">#@item.Id</td>
+                        <td><span class="badge bg-primary fs-6">@item.Name</span></td>
+                        <td>@item.Address</td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-outline-info"><i class="fa fa-edit"></i> Sửa</button>
+                            <button class="btn btn-sm btn-outline-danger"><i class="fa fa-trash"></i> Xóa</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

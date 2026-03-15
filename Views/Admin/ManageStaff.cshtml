@@ -1,0 +1,47 @@
+﻿@model IEnumerable<PhoneStore.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Quản lý Nhân sự";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary"><i class="fa fa-users me-2"></i>Danh sách Nhân viên</h2>
+    <a asp-action="CreateStaff" class="btn btn-success"><i class="fa fa-user-plus me-1"></i> Cấp tài khoản mới</a>
+</div>
+
+<div class="card shadow border-0">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">Email Đăng nhập</th>
+                    <th>Họ và Tên</th>
+                    <th>Nơi làm việc</th>
+                    <th class="text-end pe-4">Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td class="ps-4">@user.Email</td>
+                        <td class="fw-bold">@user.FullName</td>
+                        <td>
+                            @if (user.Branch != null)
+                            {
+                                <span class="badge bg-info text-dark"><i class="fa fa-store me-1"></i> @user.Branch.Name</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Chưa phân bổ</span>
+                            }
+                        </td>
+                        <td class="text-end pe-4">
+                            <span class="text-success fw-bold"><i class="fa fa-circle text-success small"></i> Đang hoạt động</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

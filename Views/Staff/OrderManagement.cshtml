@@ -1,42 +1,53 @@
 ﻿@model IEnumerable<PhoneStore.Models.Order>
+@{
+    ViewData["Title"] = "Xử lý Đơn hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
 
-<div class="card shadow">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Danh sách đơn hàng cần xử lý</h5>
-    </div>
-    <div class="card-body">
-        <table class="table table-striped">
-            <thead>
+<h2 class="fw-bold text-primary mb-4"><i class="fa fa-shipping-fast me-2"></i>Đơn hàng chờ xử lý</h2>
+
+<div class="card shadow border-0">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
                 <tr>
-                    <th>Mã đơn</th>
+                    <th class="ps-4">Mã Đơn</th>
                     <th>Khách hàng</th>
                     <th>Ngày đặt</th>
                     <th>Tổng tiền</th>
-                    <th>Trạng thái</th>
-                    <th>Thao tác</th>
+                    <th>Trạng thái hiện tại</th>
+                    <th class="text-end pe-4">Cập nhật trạng thái</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td>#@item.Id</td>
-                        <td>@item.CustomerName</td>
-                        <td>@item.OrderDate.ToString("dd/MM/yyyy")</td>
-                        <td>@item.TotalAmount.ToString("N0") đ</td>
+                        <td class="ps-4 fw-bold">#@item.Id</td>
                         <td>
-                            <span class="badge @(item.Status == "Pending" ? "bg-warning" : "bg-success")">@item.Status</span>
+                            <div class="fw-bold">@item.CustomerName</div>
+                            <small class="text-muted">@item.Phone</small>
                         </td>
+                        <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="text-danger fw-bold">@item.TotalAmount.ToString("N0") đ</td>
                         <td>
-                            <form asp-action="UpdateOrderStatus" method="post" class="d-inline">
+                            @{
+                                var badgeClass = item.Status == "Pending" ? "bg-warning text-dark" :
+                                                 item.Status == "Shipping" ? "bg-primary" :
+                                                 item.Status == "Success" ? "bg-success" : "bg-danger";
+                            }
+                            <span class="badge @badgeClass">@item.Status</span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <form asp-action="UpdateOrderStatus" method="post" class="d-inline-flex">
                                 <input type="hidden" name="orderId" value="@item.Id" />
-                                <select name="status" onchange="this.form.submit()" class="form-select form-select-sm">
-                                    <option>-- Đổi trạng thái --</option>
-                                    <option value="Confirmed">Xác nhận đơn</option>
-                                    <option value="Shipping">Đang giao hàng</option>
-                                    <option value="Success">Thành công</option>
-                                    <option value="Cancelled">Hủy đơn</option>
+                                <select name="status" class="form-select form-select-sm me-2" style="width: 140px;">
+                                    <option value="Pending" selected="@(item.Status == "Pending")">Chờ xử lý</option>
+                                    <option value="Shipping" selected="@(item.Status == "Shipping")">Đang giao</option>
+                                    <option value="Success" selected="@(item.Status == "Success")">Hoàn thành</option>
+                                    <option value="Cancelled" selected="@(item.Status == "Cancelled")">Đã hủy</option>
                                 </select>
+                                <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
                             </form>
                         </td>
                     </tr>
