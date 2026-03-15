@@ -6,16 +6,14 @@ using PhoneStore.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-// SỬA TẠI ĐÂY: Thay IdentityUser bằng ApplicationUser
+// QUAN TRỌNG: Phải dùng ApplicationUser
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
     options.Password.RequireDigit = false;
-    options.Password.RequiredLength = 6;
+    options.Password.RequiredLength = 4;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
-    options.Password.RequireLowercase = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -25,7 +23,6 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Khởi tạo dữ liệu
 using (var scope = app.Services.CreateScope())
 {
     await DbInitializer.SeedRolesAndAdminAsync(scope.ServiceProvider);

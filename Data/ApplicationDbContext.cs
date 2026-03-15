@@ -4,7 +4,6 @@ using PhoneStore.Models;
 
 namespace PhoneStore.Data
 {
-    // QUAN TRỌNG: Phải có <ApplicationUser> ở đây
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -18,10 +17,20 @@ namespace PhoneStore.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+    
 
-        protected override void OnModelCreating(ModelBuilder builder)
+    protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            // Cấu hình thủ công cho tất cả các cột decimal nếu bạn lỡ quên gắn thẻ [Column]
+            foreach (var property in builder.Model.GetEntityTypes()
+                .SelectMany(t => t.GetProperties())
+                .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
+            {
+                property.SetColumnType("decimal(18,2)");
+            }
         }
+
     }
 }
