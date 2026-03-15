@@ -25,11 +25,5 @@ namespace PhoneStore.Models
     }
 
     // 3. Mở rộng User để biết nhân viên thuộc chi nhánh nào
-    using Microsoft.AspNetCore.Identity;
-    public class ApplicationUser : IdentityUser
-    {
-        public string FullName { get; set; }
-        public int? BranchId { get; set; } // Nếu là Staff thì phải có BranchId
-        public virtual Branch Branch { get; set; }
-    }
+   
 }
