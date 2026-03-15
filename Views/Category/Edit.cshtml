@@ -1,0 +1,16 @@
+﻿@model PhoneStore.Models.Category
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<h2 class="fw-bold text-primary mb-4">Chỉnh sửa Hãng</h2>
+<div class="card shadow border-0 p-4" style="max-width: 500px;">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div class="mb-3">
+            <label class="form-label fw-bold">Tên hãng</label>
+            <input asp-for="Name" class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-primary fw-bold w-100">LƯU THÔNG TIN</button>
+        <a asp-action="Index" class="btn btn-link w-100 mt-2">Quay lại</a>
+    </form>
+</div>

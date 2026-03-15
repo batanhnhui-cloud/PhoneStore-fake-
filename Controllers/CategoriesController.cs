@@ -1,43 +1,46 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PhoneStore.Data;
 using PhoneStore.Models;
 
 namespace PhoneStore.Controllers
 {
-    public class CategoriesController : Controller
+    [Authorize(Roles = "Admin")]
+    public class CategoryController : Controller
     {
         private readonly ApplicationDbContext _context;
+        public CategoryController(ApplicationDbContext context) => _context = context;
 
-        public CategoriesController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        public async Task<IActionResult> Index() => View(await _context.Categories.ToListAsync());
 
-        // 1. Hiện danh sách hãng
-        public async Task<IActionResult> Index()
-        {
-            return View(await _context.Categories.ToListAsync());
-        }
-
-        // 2. Hiện trang thêm hãng (GET)
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // 3. Xử lý lưu hãng vào Database (POST)
+        public IActionResult Create() => View();
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
+        public async Task<IActionResult> Create(Category cat)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(category);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index)); // Lưu xong quay về danh sách
-            }
-            return View(category);
+            if (ModelState.IsValid) { _context.Add(cat); await _context.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
+            return View(cat);
+        }
+
+        // --- SỬA HÃNG ---
+        public async Task<IActionResult> Edit(int id)
+        {
+            var cat = await _context.Categories.FindAsync(id);
+            return View(cat);
+        }
+        [HttpPost]
+        public async Task<IActionResult> Edit(Category cat)
+        {
+            if (ModelState.IsValid) { _context.Update(cat); await _context.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
+            return View(cat);
+        }
+
+        // --- XÓA HÃNG ---
+        public async Task<IActionResult> Delete(int id)
+        {
+            var cat = await _context.Categories.FindAsync(id);
+            if (cat != null) { _context.Categories.Remove(cat); await _context.SaveChangesAsync(); }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

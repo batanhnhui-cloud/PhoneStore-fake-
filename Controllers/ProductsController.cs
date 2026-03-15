@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PhoneStore.Data;
@@ -6,81 +7,81 @@ using PhoneStore.Models;
 
 namespace PhoneStore.Controllers
 {
-    public class ProductsController : Controller
+    [Authorize(Roles = "Admin,Staff")]
+    public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _hostEnvironment;
 
-        public ProductsController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
+        public ProductController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
         {
-            _context = context;
-            _hostEnvironment = hostEnvironment;
+            _context = context; _hostEnvironment = hostEnvironment;
         }
 
-        // 1. Trang danh sách sản phẩm dành cho Admin
-        public async Task<IActionResult> Index()
-        {
-            var products = _context.Products.Include(p => p.Category);
-            return View(await products.ToListAsync());
-        }
+        public async Task<IActionResult> Index() => View(await _context.Products.Include(p => p.Category).ToListAsync());
 
-        // 2. Trang thêm mới - Giao diện
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name");
             return View();
         }
 
-        // 3. Xử lý lưu sản phẩm mới kèm ảnh
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,CategoryId")] Product product, IFormFile ImageFile)
+        public async Task<IActionResult> Create(Product product, IFormFile? ImageFile)
         {
             if (ModelState.IsValid)
             {
                 if (ImageFile != null)
                 {
-                    // Lưu file vào thư mục wwwroot/images
-                    string wwwRootPath = _hostEnvironment.WebRootPath;
+                    string uploadDir = Path.Combine(_hostEnvironment.WebRootPath, "images/products");
+                    if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
-                    string path = Path.Combine(wwwRootPath + @"/images/");
-
-                    if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-
-                    using (var fileStream = new FileStream(Path.Combine(path, fileName), FileMode.Create))
-                    {
-                        await ImageFile.CopyToAsync(fileStream);
-                    }
-                    product.ImageUrl = "/images/" + fileName;
+                    using (var s = new FileStream(Path.Combine(uploadDir, fileName), FileMode.Create)) { await ImageFile.CopyToAsync(s); }
+                    product.ImageUrl = "/images/products/" + fileName;
                 }
-
                 _context.Add(product);
+                await _context.SaveChangesAsync();
+
+                // Tự động tạo kho cho máy mới ở tất cả chi nhánh
+                var branches = await _context.Branches.ToListAsync();
+                foreach (var b in branches) _context.Inventories.Add(new Inventory { ProductId = product.Id, BranchId = b.Id, StockQuantity = 0 });
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
+            ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
             return View(product);
         }
 
-        // 4. Xóa sản phẩm
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null) return NotFound();
-            var product = await _context.Products.Include(p => p.Category).FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null) return NotFound();
-            return View(product);
+            var p = await _context.Products.FindAsync(id);
+            ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name", p.CategoryId);
+            return View(p);
         }
 
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        [HttpPost]
+        public async Task<IActionResult> Edit(Product p, IFormFile? ImageFile)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
+            if (ModelState.IsValid)
             {
-                _context.Products.Remove(product);
+                if (ImageFile != null)
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
+                    string path = Path.Combine(_hostEnvironment.WebRootPath, "images/products", fileName);
+                    using (var s = new FileStream(path, FileMode.Create)) { await ImageFile.CopyToAsync(s); }
+                    p.ImageUrl = "/images/products/" + fileName;
+                }
+                _context.Update(p); await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-            await _context.SaveChangesAsync();
+            ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name", p.CategoryId);
+            return View(p);
+        }
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            var p = await _context.Products.FindAsync(id);
+            if (p != null) { _context.Products.Remove(p); await _context.SaveChangesAsync(); }
             return RedirectToAction(nameof(Index));
         }
     }

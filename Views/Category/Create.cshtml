@@ -1,0 +1,36 @@
+﻿@model PhoneStore.Models.Category
+@{
+    ViewData["Title"] = "Thêm Danh mục Mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary"><i class="fa fa-tags me-2"></i>Thêm Hãng Sản Xuất Mới</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+</div>
+
+<div class="card shadow border-0" style="max-width: 500px;">
+    <div class="card-header bg-white py-3">
+        <h6 class="m-0 fw-bold text-success">Thông tin hãng điện thoại</h6>
+    </div>
+    <div class="card-body p-4">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3 fw-bold"></div>
+
+            <div class="mb-4">
+                <label asp-for="Name" class="form-label fw-bold text-secondary">Tên Hãng (Apple, Samsung...) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fa fa-tag text-muted"></i></span>
+                    <input asp-for="Name" class="form-control" placeholder="Nhập tên hãng..." required />
+                </div>
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success fw-bold px-4 py-2 w-100 fs-5 shadow-sm">
+                <i class="fa fa-save me-2"></i> LƯU DANH MỤC
+            </button>
+        </form>
+    </div>
+</div>

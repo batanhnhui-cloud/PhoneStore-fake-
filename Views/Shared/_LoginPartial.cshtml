@@ -3,33 +3,39 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
-<ul class="navbar-nav">
+<ul class="navbar-nav ms-auto align-items-center">
     @if (SignInManager.IsSignedIn(User))
     {
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-dark fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                <i class="fa fa-user-circle me-1"></i> Xin chào, @(User.Identity?.Name)
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Hồ sơ cá nhân</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                    <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                        <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
-                            <i class="fa fa-sign-out-alt me-2"></i> Đăng xuất
-                        </button>
-                    </form>
-                </li>
-            </ul>
+        <li class="nav-item me-3">
+            @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+            {
+                <a class="nav-link text-dark fw-bold" asp-controller="Staff" asp-action="Inventory">
+                    <i class="fa fa-user-circle text-primary me-1"></i> @User.Identity?.Name
+                </a>
+            }
+            else
+            {
+                <span class="nav-link text-dark fw-bold">
+                    <i class="fa fa-user-circle text-secondary me-1"></i> @User.Identity?.Name
+                </span>
+            }
+        </li>
+
+        <li class="nav-item">
+            <form class="form-inline m-0" asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit" class="btn btn-danger btn-sm fw-bold shadow-sm">
+                    <i class="fa fa-sign-out-alt me-1"></i> Đăng xuất
+                </button>
+            </form>
         </li>
     }
     else
     {
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
+        <li class="nav-item me-2">
+            <a class="btn btn-outline-success px-4 fw-bold shadow-sm rounded-pill" asp-controller="Account" asp-action="Register">Đăng ký</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link btn btn-primary text-white px-3 ms-2" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
+            <a class="btn btn-primary px-4 fw-bold shadow-sm rounded-pill" asp-controller="Account" asp-action="Login">Đăng nhập</a>
         </li>
     }
 </ul>

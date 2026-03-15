@@ -1,0 +1,74 @@
+﻿@model PhoneStore.Models.Order
+@using System.Text.Json
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    ViewData["Title"] = "Thanh toán Đơn hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // Đọc lại giỏ hàng từ Session để hiển thị tóm tắt
+    var sessionData = HttpContextAccessor.HttpContext?.Session.GetString("Cart");
+    var cartItems = sessionData != null ? JsonSerializer.Deserialize<List<CartItem>>(sessionData) : new List<CartItem>();
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-7">
+            <h3 class="fw-bold text-primary mb-4"><i class="fa fa-map-marker-alt me-2"></i>Thông tin Giao hàng</h3>
+            <div class="card shadow-sm border-0 p-4">
+                <form asp-action="Checkout" method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Họ và Tên người nhận</label>
+                        <input asp-for="CustomerName" class="form-control" required placeholder="Nhập họ tên đầy đủ..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số điện thoại</label>
+                        <input asp-for="Phone" class="form-control" required placeholder="09xxxx..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Địa chỉ nhận hàng</label>
+                        <textarea asp-for="Address" class="form-control" rows="3" required placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Chọn Chi nhánh phục vụ</label>
+                        <select asp-for="BranchId" class="form-select" asp-items="ViewBag.Branches" required>
+                            <option value="">-- Chọn chi nhánh gần bạn nhất --</option>
+                        </select>
+                        <small class="text-muted">Chi nhánh này sẽ chịu trách nhiệm giao hàng cho bạn.</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100 fw-bold fs-5 py-2">
+                        <i class="fa fa-check-circle me-2"></i> XÁC NHẬN ĐẶT HÀNG
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-5 mt-4 mt-md-0">
+            <h3 class="fw-bold text-secondary mb-4"><i class="fa fa-receipt me-2"></i>Tóm tắt Đơn hàng</h3>
+            <div class="card shadow-sm border-0">
+                <div class="card-body bg-light">
+                    @if (cartItems != null)
+                    {
+                        foreach (var item in cartItems)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">@item.ProductName</h6>
+                                    <small class="text-muted">SL: @item.Quantity x @item.Price.ToString("N0") đ</small>
+                                </div>
+                                <span class="fw-bold text-danger">@item.Total.ToString("N0") đ</span>
+                            </div>
+                        }
+                    }
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <h5 class="fw-bold mb-0">TỔNG CỘNG:</h5>
+                        <h4 class="fw-bold text-success mb-0">
+                            @(cartItems?.Sum(c => c.Total).ToString("N0") ?? "0") VNĐ
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

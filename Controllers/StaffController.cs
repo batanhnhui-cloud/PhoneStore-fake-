@@ -7,7 +7,7 @@ using PhoneStore.Models;
 
 namespace PhoneStore.Controllers
 {
-    [Authorize(Roles = "Staff,Admin")]
+    [Authorize(Roles = "Admin,Staff")]
     public class StaffController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,39 +15,39 @@ namespace PhoneStore.Controllers
 
         public StaffController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
-            _context = context;
-            _userManager = userManager;
+            _context = context; _userManager = userManager;
         }
 
-        // Chỉ hiển thị đơn hàng thuộc chi nhánh của nhân viên đang đăng nhập
-        public async Task<IActionResult> MyBranchOrders()
+        public async Task<IActionResult> Inventory()
         {
-            var currentUser = await _userManager.GetUserAsync(User);
-
-            // Nếu là Admin thì thấy hết, nếu là Staff thì lọc theo BranchId
-            var query = _context.Orders.AsQueryable();
-            if (!User.IsInRole("Admin"))
-            {
-                query = query.Where(o => o.BranchId == currentUser.BranchId);
-            }
-
-            var orders = await query.OrderByDescending(o => o.OrderDate).ToListAsync();
-            return View(orders);
+            var user = await _userManager.GetUserAsync(User);
+            var query = _context.Inventories.Include(i => i.Product).Include(i => i.Branch).AsQueryable();
+            if (!User.IsInRole("Admin") && user.BranchId.HasValue) query = query.Where(i => i.BranchId == user.BranchId);
+            return View(await query.ToListAsync());
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateStock(int productId, int quantityChange)
+        public async Task<IActionResult> QuickUpdateStock(int productId, int branchId, int adjustment)
+        {
+            var inv = await _context.Inventories.FirstOrDefaultAsync(i => i.ProductId == productId && i.BranchId == branchId);
+            if (inv != null) { inv.StockQuantity += adjustment; if (inv.StockQuantity < 0) inv.StockQuantity = 0; await _context.SaveChangesAsync(); }
+            return RedirectToAction(nameof(Inventory));
+        }
+
+        public async Task<IActionResult> OrderManagement()
         {
             var user = await _userManager.GetUserAsync(User);
-            var inventory = await _context.Inventories
-                .FirstOrDefaultAsync(i => i.ProductId == productId && i.BranchId == user.BranchId);
+            var query = _context.Orders.Include(o => o.Branch).AsQueryable();
+            if (!User.IsInRole("Admin") && user.BranchId.HasValue) query = query.Where(o => o.BranchId == user.BranchId);
+            return View(await query.OrderByDescending(o => o.OrderDate).ToListAsync());
+        }
 
-            if (inventory != null)
-            {
-                inventory.StockQuantity += quantityChange;
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction("Index", "Home");
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrderStatus(int orderId, string status)
+        {
+            var o = await _context.Orders.FindAsync(orderId);
+            if (o != null) { o.Status = status; await _context.SaveChangesAsync(); }
+            return RedirectToAction(nameof(OrderManagement));
         }
     }
 }

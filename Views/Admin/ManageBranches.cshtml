@@ -5,35 +5,70 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-primary"><i class="fa fa-building me-2"></i>Hệ thống Chi nhánh</h2>
-    <a asp-action="CreateBranch" class="btn btn-success"><i class="fa fa-plus me-1"></i> Thêm chi nhánh mới</a>
+    <div>
+        <h2 class="fw-bold text-primary mb-0"><i class="fa fa-building me-2"></i>Hệ thống Chi nhánh</h2>
+        <p class="text-muted mb-0">Quản lý các địa điểm cửa hàng trên toàn hệ thống</p>
+    </div>
+    <a asp-action="CreateBranch" class="btn btn-success shadow-sm fw-bold">
+        <i class="fa fa-plus-circle me-1"></i> THÊM CHI NHÁNH MỚI
+    </a>
 </div>
 
 <div class="card shadow border-0">
     <div class="card-body p-0">
-        <table class="table table-hover table-striped mb-0">
-            <thead class="table-dark">
-                <tr>
-                    <th class="ps-4">Mã CN</th>
-                    <th>Tên Chi Nhánh</th>
-                    <th>Địa chỉ</th>
-                    <th class="text-end pe-4">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
                     <tr>
-                        <td class="ps-4 fw-bold">#@item.Id</td>
-                        <td><span class="badge bg-primary fs-6">@item.Name</span></td>
-                        <td>@item.Address</td>
-                        <td class="text-end pe-4">
-                            <button class="btn btn-sm btn-outline-info"><i class="fa fa-edit"></i> Sửa</button>
-                            <button class="btn btn-sm btn-outline-danger"><i class="fa fa-trash"></i> Xóa</button>
-                        </td>
+                        <th class="ps-4" style="width: 100px;">Mã CN</th>
+                        <th>Tên Chi Nhánh</th>
+                        <th>Địa chỉ cửa hàng</th>
+                        <th class="text-center" style="width: 150px;">Thao tác</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @if (Model == null || !Model.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <i class="fa fa-store-slash fa-3x text-muted mb-3"></i>
+                                <p class="text-muted fw-bold">Chưa có chi nhánh nào được tạo.</p>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-secondary">#@item.Id</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                            <i class="fa fa-store small"></i>
+                                        </div>
+                                        <span class="fw-bold text-dark">@item.Name</span>
+                                    </div>
+                                </td>
+                                <td><i class="fa fa-map-marker-alt text-danger me-1"></i> @item.Address</td>
+                                <td class="text-center">
+                                    <div class="btn-group shadow-sm">
+                                        <a asp-action="EditBranch" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="Sửa">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                        <a asp-action="DeleteBranch" asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-outline-danger"
+                                               onclick="return confirm('Cảnh báo: Xóa chi nhánh sẽ xóa toàn bộ dữ liệu tồn kho liên quan. Bạn có chắc chắn muốn xóa không?')"
+                                               title="Xóa">
+                                            <i class="fa fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

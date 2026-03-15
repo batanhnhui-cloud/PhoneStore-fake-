@@ -38,6 +38,7 @@ builder.Services.ConfigureApplicationCookie(options => {
 // --- 4. CẤU HÌNH SESSION (Dành cho Giỏ hàng) ---
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options => {
+    builder.Services.AddHttpContextAccessor();
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;

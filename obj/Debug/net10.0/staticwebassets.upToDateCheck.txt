@@ -2,6 +2,9 @@ wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\images\3d266a11-dcf6-461b-aa09-ecebd022e141.webp
 wwwroot\images\bf8d0e45-0b67-401d-aef5-03d55822d9e1.webp
+wwwroot\images\products\3ab7af57-de66-4ab6-b0d7-feec875bcfe6.jpg
+wwwroot\images\products\55bb6667-6cd0-4427-a8d7-8b82381fa1e8.jpg
+wwwroot\images\products\ffc341d9-b170-4e74-a960-e07aac14f181.webp
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map

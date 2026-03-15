@@ -1,0 +1,55 @@
+﻿@model IEnumerable<PhoneStore.Models.Inventory>
+@{
+    ViewData["Title"] = "Quản lý tồn kho";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary"><i class="fa fa-warehouse me-2"></i>Kho hàng Chi nhánh</h2>
+    <span class="badge bg-dark p-2">Tổng số mặt hàng: @Model.Count()</span>
+</div>
+
+<div class="card shadow border-0">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">Sản phẩm</th>
+                    <th>Chi nhánh</th>
+                    <th class="text-center">Số lượng tồn</th>
+                    <th class="text-end pe-4">Nhập/Xuất kho nhanh</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <img src="@item.Product?.ImageUrl" style="width: 45px; height: 45px; object-fit: contain;" class="me-3 border rounded" onerror="this.src='https://placehold.co/45x45?text=Phone'" />
+                                <div>
+                                    <div class="fw-bold text-dark">@item.Product?.Name</div>
+                                    <small class="text-muted">Giá: @item.Product?.Price.ToString("N0") đ</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><i class="fa fa-store me-1 text-secondary"></i> @item.Branch?.Name</td>
+                        <td class="text-center">
+                            <span class="badge @(item.StockQuantity < 5 ? "bg-danger" : "bg-success") fs-6 shadow-sm">
+                                @item.StockQuantity chiếc
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <form asp-action="QuickUpdateStock" method="post" class="d-inline-flex shadow-sm rounded">
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <input type="hidden" name="branchId" value="@item.BranchId" />
+                                <input type="number" name="adjustment" class="form-control form-control-sm border-primary" style="width: 80px;" placeholder="+/-" required />
+                                <button type="submit" class="btn btn-sm btn-primary fw-bold">OK</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

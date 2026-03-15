@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PhoneStore.Data;
 using PhoneStore.Models;
-using Newtonsoft.Json; // Cài NuGet Newtonsoft.Json nếu chưa có
+using System.Text.Json;
 
 namespace PhoneStore.Controllers
 {
@@ -13,73 +14,130 @@ namespace PhoneStore.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
+        // Đã bổ sung thêm UserManager vào Constructor
         public CartController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
-        // 1. Xem giỏ hàng
-        public IActionResult Index()
+        private List<CartItem> GetCartItems()
         {
-            var cart = GetCartItems();
-            return View(cart);
+            var sessionData = HttpContext.Session.GetString("Cart");
+            if (sessionData == null) return new List<CartItem>();
+            return JsonSerializer.Deserialize<List<CartItem>>(sessionData) ?? new List<CartItem>();
         }
 
-        // 2. Thêm vào giỏ
-        public async Task<IActionResult> AddToCart(int productId)
+        private void SaveCartSession(List<CartItem> cart)
         {
-            var product = await _context.Products.FindAsync(productId);
+            HttpContext.Session.SetString("Cart", JsonSerializer.Serialize(cart));
+        }
+
+        public IActionResult Index() => View(GetCartItems());
+
+        public IActionResult AddToCart(int id)
+        {
+            var product = _context.Products.FirstOrDefault(p => p.Id == id);
             if (product == null) return NotFound();
 
             var cart = GetCartItems();
-            var item = cart.FirstOrDefault(c => c.ProductId == productId);
-            if (item == null)
-            {
-                cart.Add(new OrderDetail { ProductId = productId, Product = product, Quantity = 1, Price = product.Price });
-            }
+            var item = cart.FirstOrDefault(c => c.ProductId == id);
+
+            if (item != null) item.Quantity++;
             else
             {
-                item.Quantity++;
+                cart.Add(new CartItem
+                {
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    Price = product.Price,
+                    ImageUrl = product.ImageUrl,
+                    Quantity = 1
+                });
             }
-            SaveCart(cart);
+
+            SaveCartSession(cart);
             return RedirectToAction("Index");
         }
 
-        // 3. Thanh toán (Phải đăng nhập)
+        public IActionResult Remove(int id)
+        {
+            var cart = GetCartItems();
+            cart.RemoveAll(c => c.ProductId == id);
+            SaveCartSession(cart);
+            return RedirectToAction("Index");
+        }
+
+        // --- CHỨC NĂNG MỚI: THANH TOÁN ---
+
+        // 1. Hiển thị form nhập thông tin (Bắt buộc phải đăng nhập)
         [Authorize]
+        [HttpGet]
         public async Task<IActionResult> Checkout()
         {
             var cart = GetCartItems();
             if (cart.Count == 0) return RedirectToAction("Index");
 
             var user = await _userManager.GetUserAsync(User);
+
+            // Lấy danh sách chi nhánh để khách hàng chọn nơi xử lý đơn
+            ViewBag.Branches = new SelectList(await _context.Branches.ToListAsync(), "Id", "Name");
+
             var order = new Order
             {
-                UserId = user.Id,
-                CustomerName = user.FullName ?? user.UserName,
-                OrderDate = DateTime.Now,
-                TotalAmount = cart.Sum(i => i.Price * i.Quantity),
-                Status = "Pending",
-                BranchId = 1, // Mặc định gán cho chi nhánh chính
-                OrderDetails = cart
+                CustomerName = user?.FullName ?? user?.UserName, // Tự động điền tên nếu có
             };
 
+            return View(order);
+        }
+
+        // 2. Xử lý lưu vào Database khi khách bấm "Đặt hàng"
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Checkout(Order order)
+        {
+            var cart = GetCartItems();
+            if (cart.Count == 0) return RedirectToAction("Index");
+
+            var user = await _userManager.GetUserAsync(User);
+
+            // Điền các thông tin hệ thống tự tính toán
+            order.UserId = user?.Id;
+            order.OrderDate = DateTime.Now;
+            order.Status = "Pending"; // Trạng thái: Chờ xử lý
+            order.TotalAmount = cart.Sum(c => c.Total);
+
+            // Chuyển hàng từ Giỏ (Session) sang Chi tiết hóa đơn (Database)
+            foreach (var item in cart)
+            {
+                order.OrderDetails.Add(new OrderDetail
+                {
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    Price = item.Price
+                });
+
+                // Trừ số lượng tồn kho tại chi nhánh khách đã chọn
+                var inventory = await _context.Inventories
+                    .FirstOrDefaultAsync(i => i.ProductId == item.ProductId && i.BranchId == order.BranchId);
+
+                if (inventory != null)
+                {
+                    inventory.StockQuantity -= item.Quantity;
+                }
+            }
+
+            // Lưu vào Database
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            // Xóa giỏ hàng sau khi đặt
+            // Xóa giỏ hàng sau khi đặt thành công
             HttpContext.Session.Remove("Cart");
 
-            return RedirectToAction("History", "Order");
+            return RedirectToAction("CheckoutSuccess");
         }
 
-        // Các hàm phụ trợ lưu Session
-        private List<OrderDetail> GetCartItems()
-        {
-            var sessionCart = HttpContext.Session.GetString("Cart");
-            return sessionCart != null ? JsonConvert.DeserializeObject<List<OrderDetail>>(sessionCart) : new List<OrderDetail>();
-        }
-        private void SaveCart(List<OrderDetail> cart) => HttpContext.Session.SetString("Cart", JsonConvert.SerializeObject(cart));
+        // 3. Trang thông báo đặt hàng thành công
+        public IActionResult CheckoutSuccess() => View();
     }
 }

@@ -1,0 +1,40 @@
+﻿@model PhoneStore.Models.Product
+@{
+    ViewData["Title"] = "Thêm Sản Phẩm Mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2 class="fw-bold text-primary mb-4">Đăng bán Sản phẩm mới</h2>
+
+<div class="card shadow border-0 p-4" style="max-width: 800px;">
+    @* QUAN TRỌNG: Phải có enctype="multipart/form-data" *@
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Tên máy</label>
+                <input asp-for="Name" class="form-control" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Hãng</label>
+                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories" required>
+                    <option value="">-- Chọn hãng --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Giá bán</label>
+                <input asp-for="Price" type="number" class="form-control" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Chọn hình ảnh từ máy tính</label>
+                @* Đổi thành input type="file" và name phải khớp với tham số trong Controller *@
+                <input type="file" name="ImageFile" class="form-control" accept="image/*" />
+                <small class="text-muted">Hỗ trợ định dạng: .jpg, .png, .webp</small>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-3">LƯU SẢN PHẨM</button>
+    </form>
+</div>

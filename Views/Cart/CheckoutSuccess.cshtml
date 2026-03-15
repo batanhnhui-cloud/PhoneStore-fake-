@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Đặt hàng thành công";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5 text-center">
+    <div class="card shadow border-0 py-5 px-3 mx-auto" style="max-width: 600px;">
+        <i class="fa fa-check-circle text-success" style="font-size: 5rem;"></i>
+        <h2 class="fw-bold text-success mt-4">ĐẶT HÀNG THÀNH CÔNG!</h2>
+        <p class="text-muted fs-5 mt-2">Cảm ơn bạn đã tin tưởng mua sắm tại PhoneStore.</p>
+        <p>Hệ thống đã ghi nhận đơn hàng. Nhân viên chi nhánh sẽ sớm liên hệ với bạn để xác nhận thông tin giao hàng.</p>
+        
+        <div class="mt-4">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary fw-bold px-4 me-2">
+                <i class="fa fa-shopping-bag me-1"></i> Tiếp tục mua sắm
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary fw-bold px-4">
+                Về Trang chủ
+            </a>
+        </div>
+    </div>
+</div>

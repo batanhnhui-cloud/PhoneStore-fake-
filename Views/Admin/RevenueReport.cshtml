@@ -1,0 +1,44 @@
+﻿@model Dictionary<string, decimal>
+@{
+    ViewData["Title"] = "Báo cáo Doanh thu";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    decimal totalRevenue = Model.Values.Sum();
+}
+
+<h2 class="fw-bold text-success mb-4"><i class="fa fa-chart-line me-2"></i>Báo cáo Doanh thu toàn chuỗi</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body">
+                <h5 class="card-title">Tổng doanh thu hệ thống</h5>
+                <h3 class="fw-bold">@totalRevenue.ToString("N0") VNĐ</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow border-0">
+    <div class="card-header bg-white py-3">
+        <h6 class="m-0 fw-bold text-primary">Chi tiết theo từng chi nhánh</h6>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">Tên Chi nhánh</th>
+                    <th class="text-end pe-4">Doanh thu đạt được</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary"><i class="fa fa-store me-2"></i>@item.Key</td>
+                        <td class="text-end pe-4 fw-bold text-danger">@item.Value.ToString("N0") VNĐ</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
