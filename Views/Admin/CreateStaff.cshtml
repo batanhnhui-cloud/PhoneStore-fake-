@@ -1,34 +1,45 @@
-﻿@model PhoneStore.Models.ApplicationUser
-@{
-    ViewData["Title"] = "Thêm Nhân Viên Chi Nhánh";
+﻿@{
+    ViewData["Title"] = "Thêm nhân viên";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Tạo tài khoản Nhân viên mới</h6>
-    </div>
-    <div class="card-body">
-        <form asp-action="CreateStaff" method="post">
-            <div class="mb-3">
-                <label class="form-label">Họ tên nhân viên</label>
-                <input name="fullName" class="form-control" required />
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Email đăng nhập</label>
-                <input name="email" type="email" class="form-control" required />
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Mật khẩu</label>
-                <input name="password" type="password" class="form-control" required />
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Gán vào Chi nhánh</label>
-                <select name="branchId" class="form-select" asp-items="ViewBag.Branches">
-                    <option value="">-- Chọn chi nhánh làm việc --</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-success">Xác nhận tạo</button>
-            <a asp-action="ManageStaff" class="btn btn-secondary">Hủy</a>
-        </form>
-    </div>
+<h2 class="fw-bold text-success mb-4"><i class="fa fa-user-plus me-2"></i>Thêm nhân viên mới</h2>
+
+<div class="card shadow border-0 p-4" style="max-width: 600px;">
+    <form asp-action="CreateStaff" method="post">
+        <div asp-validation-summary="All" class="text-danger fw-bold mb-3"></div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Họ và Tên</label>
+            <input name="fullName" class="form-control" placeholder="Nhập họ tên đầy đủ..." required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Email (Dùng để đăng nhập)</label>
+            <input name="email" type="email" class="form-control" placeholder="nguyenvana@gmail.com" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Mật khẩu</label>
+            <input name="password" type="password" class="form-control" placeholder="Mật khẩu ít nhất 6 ký tự, có chữ hoa và số..." required />
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Gán vào Chi nhánh</label>
+            <select name="branchId" class="form-select" asp-items="ViewBag.Branches" required>
+                <option value="">-- Bắt buộc chọn một chi nhánh --</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 fw-bold py-2">
+            <i class="fa fa-save me-1"></i> TẠO TÀI KHOẢN
+        </button>
+        <a asp-action="ManageStaff" class="btn btn-light w-100 mt-2 text-muted">Hủy bỏ</a>
+    </form>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -4,25 +4,31 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2 class="text-primary fw-bold mb-4">Chỉnh sửa chi nhánh</h2>
+<h2 class="text-primary fw-bold mb-4"><i class="fa fa-edit me-2"></i>Chỉnh sửa chi nhánh</h2>
 
 <div class="card shadow border-0 p-4" style="max-width: 500px;">
     <form asp-action="EditBranch" method="post">
+        <div asp-validation-summary="All" class="text-danger fw-bold mb-3"></div>
+        
         <input type="hidden" asp-for="Id" />
+        
         <div class="mb-3">
-            <label class="form-label fw-bold">Tên chi nhánh</label>
+            <label asp-for="Name" class="form-label fw-bold">Tên chi nhánh</label>
             <input asp-for="Name" class="form-control" required />
+            <span asp-validation-for="Name" class="text-danger small"></span>
         </div>
-        <div class="mb-3">
-            <label class="form-label fw-bold">Địa chỉ</label>
+        
+        <div class="mb-4">
+            <label asp-for="Address" class="form-label fw-bold">Địa chỉ</label>
             <input asp-for="Address" class="form-control" required />
+            <span asp-validation-for="Address" class="text-danger small"></span>
         </div>
-        <button type="submit" class="btn btn-primary w-100">LƯU THAY ĐỔI</button>
-        <a asp-action="ManageBranches" class="btn btn-link w-100 mt-2">Quay lại</a>
+        
+        <button type="submit" class="btn btn-primary w-100 fw-bold py-2"><i class="fa fa-save me-1"></i> LƯU THAY ĐỔI</button>
+        <a asp-action="ManageBranches" class="btn btn-light w-100 mt-2 text-muted">Hủy bỏ</a>
     </form>
 </div>
 
-@* Phần này gây ra lỗi nếu Layout không có RenderSection *@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");

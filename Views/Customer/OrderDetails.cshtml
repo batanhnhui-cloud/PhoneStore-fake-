@@ -1,0 +1,95 @@
+﻿@model PhoneStore.Models.Order
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng #" + Model.Id;
+}
+
+<div class="container mt-5 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary"><i class="fa fa-receipt me-2"></i>Chi tiết đơn hàng #@Model.Id</h2>
+        <a asp-action="MyOrders" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white fw-bold py-3 text-uppercase text-muted">
+                    <i class="fa fa-map-marker-alt me-2"></i>Thông tin nhận hàng
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><i class="fa fa-user text-muted me-2" style="width:20px"></i> <strong>@Model.CustomerName</strong></p>
+                    <p class="mb-2"><i class="fa fa-phone text-muted me-2" style="width:20px"></i> @Model.Phone</p>
+                    <p class="mb-2"><i class="fa fa-home text-muted me-2" style="width:20px"></i> @Model.Address</p>
+                    <hr />
+                    <p class="mb-0 text-muted"><small><i class="fa fa-clock me-1"></i> Đặt lúc: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</small></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm border-0 h-100 bg-light">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                    <h5 class="text-muted mb-3">Trạng thái đơn hàng</h5>
+                    @{
+                        var badgeClass = Model.Status == "Success" ? "bg-success" : (Model.Status == "Cancelled" ? "bg-danger" : "bg-warning text-dark");
+                        var statusText = Model.Status == "Success" ? "Đã giao thành công" : (Model.Status == "Cancelled" ? "Đã hủy" : "Đang chờ xử lý");
+                    }
+                    <h2 class="mb-4"><span class="badge @badgeClass py-2 px-4 shadow-sm">@statusText</span></h2>
+                    
+                    <h5 class="text-muted mb-1">Tổng thanh toán</h5>
+                    <h1 class="fw-bold text-danger mb-0">@Model.TotalAmount.ToString("N0") đ</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white fw-bold py-3">
+            <i class="fa fa-box-open me-2"></i>Danh sách sản phẩm đã đặt
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Sản phẩm</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end pe-4">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var detail in Model.OrderDetails)
+                        {
+                            var lineTotal = detail.Quantity * detail.Price;
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center py-2">
+                                        @if (!string.IsNullOrEmpty(detail.Product?.ImageUrl))
+                                        {
+                                            <img src="@detail.Product.ImageUrl" class="rounded border me-3" style="width: 60px; height: 60px; object-fit: cover;" alt="Product" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light rounded border me-3 d-flex justify-content-center align-items-center" style="width: 60px; height: 60px;">
+                                                <i class="fa fa-mobile-alt text-muted fa-2x"></i>
+                                            </div>
+                                        }
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-primary">@detail.Product?.Name</h6>
+                                            <small class="text-muted">Mã SP: #@detail.ProductId</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center fw-bold">x @detail.Quantity</td>
+                                <td class="text-end">@detail.Price.ToString("N0") đ</td>
+                                <td class="text-end pe-4 fw-bold text-danger">@lineTotal.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

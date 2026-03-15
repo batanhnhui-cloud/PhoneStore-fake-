@@ -2,6 +2,12 @@ wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\images\3d266a11-dcf6-461b-aa09-ecebd022e141.webp
 wwwroot\images\bf8d0e45-0b67-401d-aef5-03d55822d9e1.webp
+wwwroot\images\products\31aa191c-ee80-4de1-b62c-502792650959.jpg
+wwwroot\images\products\3ab7af57-de66-4ab6-b0d7-feec875bcfe6.jpg
+wwwroot\images\products\54d1a4c2-34b0-4a77-beba-4643a6ce5f85.jpg
+wwwroot\images\products\55bb6667-6cd0-4427-a8d7-8b82381fa1e8.jpg
+wwwroot\images\products\7c05f3bc-7277-4959-a1c4-8c694266d7fb.jpg
+wwwroot\images\products\ffc341d9-b170-4e74-a960-e07aac14f181.webp
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
@@ -63,11 +69,6 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\images\products\55bb6667-6cd0-4427-a8d7-8b82381fa1e8.jpg
-wwwroot\images\products\3ab7af57-de66-4ab6-b0d7-feec875bcfe6.jpg
-wwwroot\images\products\ffc341d9-b170-4e74-a960-e07aac14f181.webp
-wwwroot\images\products\31aa191c-ee80-4de1-b62c-502792650959.jpg
-wwwroot\images\products\54d1a4c2-34b0-4a77-beba-4643a6ce5f85.jpg
 D:\Đồ án ASP.NET - Copy\PhoneStore\PhoneStore\wwwroot\lib\jquery\LICENSE.txt
 D:\Đồ án ASP.NET - Copy\PhoneStore\PhoneStore\wwwroot\lib\jquery\dist\jquery.slim.min.map
 D:\Đồ án ASP.NET - Copy\PhoneStore\PhoneStore\wwwroot\lib\jquery\dist\jquery.slim.min.js
