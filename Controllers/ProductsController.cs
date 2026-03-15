@@ -33,16 +33,16 @@ namespace PhoneStore.Controllers
             {
                 if (ImageFile != null)
                 {
-                    string uploadDir = Path.Combine(_hostEnvironment.WebRootPath, "images/products");
-                    if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
-                    using (var s = new FileStream(Path.Combine(uploadDir, fileName), FileMode.Create)) { await ImageFile.CopyToAsync(s); }
+                    string path = Path.Combine(_hostEnvironment.WebRootPath, "images/products");
+                    if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+                    using (var s = new FileStream(Path.Combine(path, fileName), FileMode.Create)) { await ImageFile.CopyToAsync(s); }
                     product.ImageUrl = "/images/products/" + fileName;
                 }
                 _context.Add(product);
                 await _context.SaveChangesAsync();
 
-                // Tự động tạo kho cho máy mới ở tất cả chi nhánh
+                // Tự động tạo kho cho tất cả chi nhánh
                 var branches = await _context.Branches.ToListAsync();
                 foreach (var b in branches) _context.Inventories.Add(new Inventory { ProductId = product.Id, BranchId = b.Id, StockQuantity = 0 });
                 await _context.SaveChangesAsync();
@@ -55,6 +55,7 @@ namespace PhoneStore.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var p = await _context.Products.FindAsync(id);
+            if (p == null) return NotFound();
             ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name", p.CategoryId);
             return View(p);
         }

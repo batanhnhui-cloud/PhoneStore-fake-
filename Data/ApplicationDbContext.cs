@@ -11,26 +11,34 @@ namespace PhoneStore.Data
         {
         }
 
-        public DbSet<Branch> Branches { get; set; }
-        public DbSet<Inventory> Inventories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<Branch> Branches { get; set; }
+        public DbSet<Inventory> Inventories { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
-    
 
-    protected override void OnModelCreating(ModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // Cấu hình thủ công cho tất cả các cột decimal nếu bạn lỡ quên gắn thẻ [Column]
-            foreach (var property in builder.Model.GetEntityTypes()
-                .SelectMany(t => t.GetProperties())
-                .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
-            {
-                property.SetColumnType("decimal(18,2)");
-            }
-        }
+            // Cấu hình định dạng tiền tệ: decimal(18,2) 
+            // Nghĩa là: Tối đa 18 chữ số, trong đó có 2 chữ số sau dấu phẩy.
 
+            // 1. Cho bảng Sản phẩm
+            builder.Entity<Product>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(18,2)");
+
+            // 2. Cho bảng Đơn hàng
+            builder.Entity<Order>()
+                .Property(o => o.TotalAmount)
+                .HasColumnType("decimal(18,2)");
+
+            // 3. Cho bảng Chi tiết đơn hàng
+            builder.Entity<OrderDetail>()
+                .Property(od => od.Price)
+                .HasColumnType("decimal(18,2)");
+        }
     }
 }
