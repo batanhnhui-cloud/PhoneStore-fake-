@@ -1,0 +1,69 @@
+﻿@model IEnumerable<PhoneStore.Models.Order>
+
+@{
+    Layout = "_AdminLayout";
+}
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4 text-primary fw-bold">DANH SÁCH ĐƠN HÀNG MỚI</h2>
+    <table class="table table-hover table-bordered shadow-sm">
+        <thead class="table-dark">
+            <tr class="text-center">
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Số điện thoại</th>
+                <th>Ngày đặt</th>
+                <th>Tổng tiền</th>
+                <th>Địa chỉ</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-center fw-bold">#@item.Id</td>
+                    <td>@item.CustomerName</td>
+                    <td class="text-center">@item.Phone</td>
+                    <td class="text-center">@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="text-end text-danger fw-bold">@item.TotalAmount.ToString("N0") đ</td>
+                    <td>@item.Address</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <table class="table table-hover table-bordered shadow-sm">
+        <thead class="table-dark">
+            <tr class="text-center">
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Ngày đặt</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-center fw-bold">#@item.Id</td>
+                    <td>@item.CustomerName</td>
+                    <td class="text-center">@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="text-end text-danger fw-bold">@item.TotalAmount.ToString("N0") đ</td>
+                    <td class="text-center">
+                        <span class="badge @(item.Status == "Đã hoàn thành" ? "bg-success" : "bg-warning text-dark")">@item.Status</span>
+                    </td>
+                    <td class="text-center">
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Xem chi tiết</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>

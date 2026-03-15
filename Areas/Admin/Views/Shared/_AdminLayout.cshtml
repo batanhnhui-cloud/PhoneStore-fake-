@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Quản trị hệ thống</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #sidebar {
+            width: 250px;
+            background: #343a40;
+            color: white;
+            transition: 0.3s;
+        }
+
+        #content {
+            flex: 1;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,.8);
+            border-bottom: 1px solid #4b545c;
+        }
+
+            .nav-link:hover {
+                color: white;
+                background: #495057;
+            }
+
+        .active-link {
+            background: #007bff !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar" class="d-flex flex-column p-3">
+        <h3 class="text-center fw-bold text-info mb-4">ADMIN PANEL</h3>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a asp-area="Admin" asp-controller="Products" asp-action="Index" class="nav-link">📦 Quản lý Sản phẩm</a>
+            </li>
+            <li>
+                <a asp-area="Admin" asp-controller="Categories" asp-action="Index" class="nav-link">🏷️ Quản lý Hãng</a>
+            </li>
+            <li>
+                <a asp-area="Admin" asp-controller="Order" asp-action="AdminIndex" class="nav-link">🧾 Quản lý Đơn hàng</a>
+            </li>
+            <hr>
+            <li>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="nav-link text-warning">🏠 Quay lại Web Khách</a>
+            </li>
+        </ul>
+    </div>
+
+    <div id="content">
+        <nav class="navbar navbar-light bg-white shadow-sm mb-4 rounded">
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h1">Hệ thống quản lý cửa hàng điện thoại</span>
+            </div>
+        </nav>
+        @RenderBody()
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

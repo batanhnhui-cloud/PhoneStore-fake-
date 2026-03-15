@@ -1,0 +1,59 @@
+﻿@model IEnumerable<PhoneStore.Models.Product>
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="container">
+    <div class="row mb-4 p-3 bg-light rounded shadow-sm">
+        <div class="col-md-12">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" name="searchString" class="form-control" placeholder="Nhập tên điện thoại cần tìm..." />
+                </div>
+                <div class="col-md-3">
+                    <select name="categoryId" class="form-select">
+                        <option value="">-- Tất cả các hãng --</option>
+                        @foreach (var cat in ViewBag.Categories)
+                        {
+                            <option value="@cat.Id">@cat.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary px-4">Tìm kiếm</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="@item.ImageUrl" class="card-img-top p-3" style="height: 200px; object-fit: contain;">
+                        <div class="card-body d-flex flex-column text-center">
+                            <h5 class="card-title fw-bold">@item.Name</h5>
+                            <p class="text-muted small">@(item.Category?.Name ?? "Khác")</p>
+                            <p class="text-danger fs-5 fw-bold">@item.Price.ToString("N0") đ</p>
+                            <div class="mt-auto">
+                                <a asp-controller="Cart" asp-action="AddToCart" asp-route-id="@item.Id" class="btn btn-primary w-100">
+                                    🛒 Mua ngay
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <h3>Không tìm thấy sản phẩm phù hợp!</h3>
+            </div>
+        }
+    </div>
+</div>

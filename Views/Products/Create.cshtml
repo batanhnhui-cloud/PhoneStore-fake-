@@ -1,0 +1,45 @@
+﻿@model PhoneStore.Models.Product
+
+@{
+    Layout = "_AdminLayout";
+}
+
+@{
+    ViewData["Title"] = "Thêm mới điện thoại";
+}
+
+<div class="container">
+    <h2>Thêm mới điện thoại</h2>
+    <hr />
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="Create" enctype="multipart/form-data">
+                <div class="form-group mb-3">
+                    <label class="control-label">Tên điện thoại</label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="control-label">Mô tả</label>
+                    <textarea asp-for="Description" class="form-control"></textarea>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="control-label">Giá bán (VNĐ)</label>
+                    <input asp-for="Price" class="form-control" type="number" />
+                </div>
+                <div class="form-group mb-3">
+                    <label class="control-label">Hình ảnh sản phẩm</label>
+                    <input type="file" name="ImageFile" class="form-control" accept="image/*" />
+                </div>
+                <div class="form-group mb-3">
+                    <label class="control-label">Hãng sản xuất</label>
+                    <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Lưu sản phẩm</button>
+                    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
