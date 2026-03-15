@@ -1,22 +1,34 @@
-﻿@{
-    ViewData["Title"] = "Thêm Nhân Viên Mới";
+﻿@model PhoneStore.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Thêm Nhân Viên Chi Nhánh";
 }
 
-<h2>Thêm Nhân Viên Mới</h2>
-<hr />
-<div class="row">
-    <div class="col-md-4">
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Tạo tài khoản Nhân viên mới</h6>
+    </div>
+    <div class="card-body">
         <form asp-action="CreateStaff" method="post">
-            <div class="form-group mb-3">
-                <label>Email đăng nhập</label>
-                <input name="email" class="form-control" type="email" required />
+            <div class="mb-3">
+                <label class="form-label">Họ tên nhân viên</label>
+                <input name="fullName" class="form-control" required />
             </div>
-            <div class="form-group mb-3">
-                <label>Mật khẩu tạm thời</label>
-                <input name="password" class="form-control" type="password" required />
+            <div class="mb-3">
+                <label class="form-label">Email đăng nhập</label>
+                <input name="email" type="email" class="form-control" required />
             </div>
-            <button type="submit" class="btn btn-primary">Tạo tài khoản Staff</button>
-            <a asp-action="ManageStaff" class="btn btn-secondary">Quay lại</a>
+            <div class="mb-3">
+                <label class="form-label">Mật khẩu</label>
+                <input name="password" type="password" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Gán vào Chi nhánh</label>
+                <select name="branchId" class="form-select" asp-items="ViewBag.Branches">
+                    <option value="">-- Chọn chi nhánh làm việc --</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">Xác nhận tạo</button>
+            <a asp-action="ManageStaff" class="btn btn-secondary">Hủy</a>
         </form>
     </div>
 </div>

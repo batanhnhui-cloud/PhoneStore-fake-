@@ -1,5 +1,7 @@
 wwwroot\css\site.css
 wwwroot\favicon.ico
+wwwroot\images\3d266a11-dcf6-461b-aa09-ecebd022e141.webp
+wwwroot\images\bf8d0e45-0b67-401d-aef5-03d55822d9e1.webp
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
@@ -61,8 +63,6 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\images\3d266a11-dcf6-461b-aa09-ecebd022e141.webp
-wwwroot\images\bf8d0e45-0b67-401d-aef5-03d55822d9e1.webp
 D:\Đồ án ASP.NET\PhoneStore\PhoneStore\wwwroot\css\site.css
 D:\Đồ án ASP.NET\PhoneStore\PhoneStore\wwwroot\favicon.ico
 D:\Đồ án ASP.NET\PhoneStore\PhoneStore\wwwroot\js\site.js

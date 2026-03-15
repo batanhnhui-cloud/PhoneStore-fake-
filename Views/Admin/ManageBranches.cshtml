@@ -1,0 +1,31 @@
+﻿@model IEnumerable<PhoneStore.Models.Branch>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Hệ thống Chi nhánh</h2>
+    <a asp-action="CreateBranch" class="btn btn-primary">+ Thêm chi nhánh mới</a>
+</div>
+
+<table class="table table-hover bg-white shadow-sm rounded">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Tên Chi Nhánh</th>
+            <th>Địa chỉ</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td><strong>@item.Name</strong></td>
+                <td>@item.Address</td>
+                <td>
+                    <a class="btn btn-sm btn-outline-info">Sửa</a>
+                    <a class="btn btn-sm btn-outline-danger">Đóng cửa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
