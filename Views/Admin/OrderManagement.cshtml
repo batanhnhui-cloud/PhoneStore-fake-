@@ -52,7 +52,7 @@
                                     <ul class="list-unstyled mb-0 small">
                                         @foreach (var detail in item.OrderDetails)
                                         {
-                                            <li>- @detail.Product?.Name <span class="badge bg-light text-dark border">x@detail.Quantity</span></li>
+                                            <li>- @detail.Product?.Name <span class="badge bg-light text-dark border fw-bold text-danger">x @(detail.Quantity)</span></li>
                                         }
                                     </ul>
                                 </td>

@@ -1,71 +1,59 @@
-﻿@model PhoneStore.Models.Order
-@using System.Text.Json
-@using Microsoft.AspNetCore.Http
-@inject IHttpContextAccessor HttpContextAccessor
+﻿@model IEnumerable<PhoneStore.Models.CartItem>
 @{
-    ViewData["Title"] = "Thanh toán Đơn hàng";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    
-    // Đọc lại giỏ hàng từ Session để hiển thị tóm tắt
-    var sessionData = HttpContextAccessor.HttpContext?.Session.GetString("Cart");
-    var cartItems = sessionData != null ? JsonSerializer.Deserialize<List<CartItem>>(sessionData) : new List<CartItem>();
+    ViewData["Title"] = "Xác nhận Thanh toán";
 }
 
-<div class="container mt-4">
+<div class="container mt-5 mb-5">
+    <h2 class="fw-bold text-success mb-4"><i class="fa fa-truck fast me-2"></i>Thông tin giao hàng</h2>
+
     <div class="row">
-        <div class="col-md-7">
-            <h3 class="fw-bold text-primary mb-4"><i class="fa fa-map-marker-alt me-2"></i>Thông tin Giao hàng</h3>
+        <div class="col-md-7 mb-4">
             <div class="card shadow-sm border-0 p-4">
                 <form asp-action="Checkout" method="post">
+                    @if (!User.Identity.IsAuthenticated)
+                    {
+                        <div class="alert alert-info small mb-4">
+                            <i class="fa fa-info-circle me-1"></i> Bạn đang mua hàng với tư cách <b>Khách vãng lai</b>. <a asp-controller="Account" asp-action="Login">Đăng nhập</a> để quản lý đơn hàng tốt hơn!
+                        </div>
+                    }
+
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Họ và Tên người nhận</label>
-                        <input asp-for="CustomerName" class="form-control" required placeholder="Nhập họ tên đầy đủ..." />
+                        <label class="form-label fw-bold">Họ và tên người nhận</label>
+                        <input name="customerName" class="form-control" value="@ViewBag.CustomerName" required placeholder="Nhập tên..." />
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Số điện thoại</label>
-                        <input asp-for="Phone" class="form-control" required placeholder="09xxxx..." />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Địa chỉ nhận hàng</label>
-                        <textarea asp-for="Address" class="form-control" rows="3" required placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."></textarea>
+                        <input name="phone" class="form-control" value="@ViewBag.Phone" required placeholder="Nhập số điện thoại..." />
                     </div>
                     <div class="mb-4">
-                        <label class="form-label fw-bold">Chọn Chi nhánh phục vụ</label>
-                        <select asp-for="BranchId" class="form-select" asp-items="ViewBag.Branches" required>
-                            <option value="">-- Chọn chi nhánh gần bạn nhất --</option>
-                        </select>
-                        <small class="text-muted">Chi nhánh này sẽ chịu trách nhiệm giao hàng cho bạn.</small>
+                        <label class="form-label fw-bold">Địa chỉ nhận hàng chi tiết</label>
+                        <textarea name="address" class="form-control" rows="3" required placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."></textarea>
                     </div>
-                    
-                    <button type="submit" class="btn btn-success w-100 fw-bold fs-5 py-2">
-                        <i class="fa fa-check-circle me-2"></i> XÁC NHẬN ĐẶT HÀNG
+
+                    <button type="submit" class="btn btn-primary fw-bold py-3 w-100 fs-5 shadow">
+                        <i class="fa fa-check-circle me-2"></i> HOÀN TẤT ĐẶT HÀNG
                     </button>
                 </form>
             </div>
         </div>
 
-        <div class="col-md-5 mt-4 mt-md-0">
-            <h3 class="fw-bold text-secondary mb-4"><i class="fa fa-receipt me-2"></i>Tóm tắt Đơn hàng</h3>
+        <div class="col-md-5 mb-4">
             <div class="card shadow-sm border-0">
-                <div class="card-body bg-light">
-                    @if (cartItems != null)
-                    {
-                        foreach (var item in cartItems)
+                <div class="card-header bg-dark text-white fw-bold py-3">Mã đơn hàng tạm tính</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush mb-3">
+                        @foreach (var item in Model)
                         {
-                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                                <div>
-                                    <h6 class="mb-0 fw-bold">@item.ProductName</h6>
-                                    <small class="text-muted">SL: @item.Quantity x @item.Price.ToString("N0") đ</small>
-                                </div>
-                                <span class="fw-bold text-danger">@item.Total.ToString("N0") đ</span>
-                            </div>
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div><span class="fw-bold">@item.ProductName</span> <span class="badge bg-secondary ms-1">x @item.Quantity</span></div>
+                                <span class="text-danger fw-bold">@item.Total.ToString("N0") đ</span>
+                            </li>
                         }
-                    }
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <h5 class="fw-bold mb-0">TỔNG CỘNG:</h5>
-                        <h4 class="fw-bold text-success mb-0">
-                            @(cartItems?.Sum(c => c.Total).ToString("N0") ?? "0") VNĐ
-                        </h4>
+                    </ul>
+                    <hr />
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">TỔNG CỘNG</h5>
+                        <h3 class="text-danger fw-bold mb-0">@Model.Sum(x => x.Total).ToString("N0") đ</h3>
                     </div>
                 </div>
             </div>

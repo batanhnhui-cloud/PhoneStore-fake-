@@ -46,6 +46,8 @@ builder.Services.AddSession(options => {
 
 // --- 5. ĐĂNG KÝ CÁC DỊCH VỤ MVC ---
 builder.Services.AddControllersWithViews();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options => { options.IdleTimeout = TimeSpan.FromMinutes(30); options.Cookie.IsEssential = true; });
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
@@ -77,6 +79,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession();
 
 // LƯU Ý: Session phải đặt TRƯỚC Authentication
 app.UseSession();

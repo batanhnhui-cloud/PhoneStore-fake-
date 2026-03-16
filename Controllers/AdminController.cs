@@ -42,7 +42,8 @@ namespace PhoneStore.Controllers
 
             ViewBag.LowStockItems = await _context.Inventories
                 .Include(i => i.Product).Include(i => i.Branch)
-                .Where(i => i.StockQuantity > 0 && i.StockQuantity <= 5)
+                // ĐÃ SỬA: Bỏ điều kiện > 0 để hệ thống quét trúng cả các máy đang bằng 0 (Hết hàng)
+                .Where(i => i.StockQuantity <= 5)
                 .OrderBy(i => i.StockQuantity).Take(10).ToListAsync();
 
             ViewBag.TopProducts = await _context.OrderDetails

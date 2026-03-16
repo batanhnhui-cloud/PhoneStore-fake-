@@ -8,6 +8,7 @@ wwwroot\images\products\3ab7af57-de66-4ab6-b0d7-feec875bcfe6.jpg
 wwwroot\images\products\54d1a4c2-34b0-4a77-beba-4643a6ce5f85.jpg
 wwwroot\images\products\55bb6667-6cd0-4427-a8d7-8b82381fa1e8.jpg
 wwwroot\images\products\7c05f3bc-7277-4959-a1c4-8c694266d7fb.jpg
+wwwroot\images\products\9e571cb3-3b6c-4908-9c3f-50dbb37afdad.webp
 wwwroot\images\products\d1fef7cc-b0d5-433b-9389-d6d79a45a625.webp
 wwwroot\images\products\ffc341d9-b170-4e74-a960-e07aac14f181.webp
 wwwroot\js\site.js

@@ -1,65 +1,76 @@
-﻿@model List<PhoneStore.Models.CartItem>
+﻿@model IEnumerable<PhoneStore.Models.CartItem>
 @{
     ViewData["Title"] = "Giỏ hàng của bạn";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container mt-4">
+<div class="container mt-5 mb-5">
     <h2 class="fw-bold text-primary mb-4"><i class="fa fa-shopping-cart me-2"></i>Giỏ hàng của bạn</h2>
 
-    @if (Model == null || Model.Count == 0)
+    @if (!Model.Any())
     {
-        <div class="alert alert-info text-center shadow-sm py-5">
-            <i class="fa fa-box-open fa-3x text-muted mb-3"></i>
-            <h4>Giỏ hàng đang trống</h4>
-            <p>Hãy quay lại trang chủ để chọn cho mình những chiếc điện thoại ưng ý nhé!</p>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-2 fw-bold">Tiếp tục mua sắm</a>
+        <div class="text-center py-5">
+            <i class="fa fa-cart-arrow-down fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Giỏ hàng đang trống!</h4>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3 rounded-pill px-4 fw-bold">Tiếp tục mua sắm</a>
         </div>
     }
     else
     {
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Sản phẩm</th>
-                            <th>Đơn giá</th>
-                            <th class="text-center">Số lượng</th>
-                            <th class="text-danger fw-bold">Thành tiền</th>
-                            <th class="text-end pe-4">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="ps-4">
-                                    <div class="d-flex align-items-center">
-                                        <img src="@item.ImageUrl" style="width: 60px; height: 60px; object-fit: contain;" class="me-3 rounded border" onerror="this.src='https://placehold.co/60x60?text=SP'" />
-                                        <span class="fw-bold fs-6">@item.ProductName</span>
-                                    </div>
-                                </td>
-                                <td>@item.Price.ToString("N0") đ</td>
-                                <td class="text-center fw-bold text-primary">@item.Quantity</td>
-                                <td class="text-danger fw-bold">@item.Total.ToString("N0") đ</td>
-                                <td class="text-end pe-4">
-                                    <a asp-controller="Cart" asp-action="Remove" asp-route-id="@item.ProductId" class="btn btn-sm btn-outline-danger">
-                                        <i class="fa fa-trash"></i> Xóa
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Sản phẩm</th>
+                                    <th>Đơn giá</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-end pe-4">Thành tiền</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center py-2">
+                                                <img src="@item.ImageUrl" style="width: 50px; height: 50px; object-fit: contain;" class="me-3 border rounded p-1" />
+                                                <span class="fw-bold text-dark">@item.ProductName</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-danger fw-bold">@item.Price.ToString("N0") đ</td>
+                                        <td class="text-center fw-bold">@item.Quantity</td>
+                                        <td class="text-end pe-4 fw-bold text-primary">@item.Total.ToString("N0") đ</td>
+                                        <td class="text-center pe-3">
+                                            <a asp-action="RemoveFromCart" asp-route-id="@item.ProductId" class="text-danger" title="Xóa"><i class="fa fa-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            <div class="card-footer bg-white text-end py-3 pe-4">
-                <h4 class="fw-bold">Tổng thanh toán: <span class="text-danger">@Model.Sum(x => x.Total).ToString("N0") đ</span></h4>
-                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary me-2 mt-2 fw-bold">Mua thêm</a>
-                
-                <a asp-controller="Cart" asp-action="Checkout" class="btn btn-success mt-2 fw-bold px-4">
-                    Tiến hành Thanh toán <i class="fa fa-arrow-right ms-1"></i>
-                </a>
+            
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 bg-light h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="fw-bold text-dark mb-4">Tóm tắt đơn hàng</h5>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Tổng sản phẩm:</span>
+                            <span class="fw-bold">@Model.Sum(x => x.Quantity) máy</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="text-muted">Tổng tiền thanh toán:</span>
+                            <h3 class="fw-bold text-danger mb-0">@Model.Sum(x => x.Total).ToString("N0") đ</h3>
+                        </div>
+                        <a asp-action="Checkout" class="btn btn-success fw-bold py-3 mt-auto w-100 fs-5 shadow-sm">
+                            <i class="fa fa-credit-card me-2"></i> ĐẶT HÀNG NGAY
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     }

@@ -9,8 +9,8 @@ namespace PhoneStore.Models
         public int Id { get; set; }
 
         [Required]
-        public string UserId { get; set; }
-
+        public string? UserId { get; set; }
+        public ApplicationUser? User { get; set; }
         [Required(ErrorMessage = "Tên khách hàng không được để trống")]
         public string CustomerName { get; set; }
 
