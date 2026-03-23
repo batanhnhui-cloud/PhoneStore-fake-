@@ -1,0 +1,96 @@
+﻿@model PhoneStore.Models.Product
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none text-muted fw-bold">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-action="Shop" class="text-decoration-none text-muted fw-bold">Điện thoại</a></li>
+            <li class="breadcrumb-item active text-primary fw-bold" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-5">
+        <div class="row g-0">
+            <div class="col-md-5 p-5 bg-white d-flex justify-content-center align-items-center">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" class="img-fluid" alt="@Model.Name" style="max-height: 400px; object-fit: contain;">
+                }
+                else
+                {
+                    <i class="fa fa-mobile-alt text-muted opacity-25" style="font-size: 15rem;"></i>
+                }
+            </div>
+
+            <div class="col-md-7 p-5 bg-light">
+                <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold mb-3 border border-primary border-opacity-25">
+                    Hãng: @Model.Category?.Name
+                </div>
+                
+                <h1 class="fw-bolder text-dark mb-3">@Model.Name</h1>
+                
+                <div class="d-flex align-items-center mb-4 pb-4 border-bottom">
+                    <h2 class="text-danger fw-bolder mb-0 me-3">@Model.Price.ToString("N0")<small class="text-muted fs-5">đ</small></h2>
+                    <span class="badge bg-success shadow-sm px-2 py-1"><i class="fa fa-check me-1"></i>Sẵn hàng</span>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="fw-bold text-dark mb-3">Thông số kỹ thuật</h5>
+                    <p class="text-muted lh-lg">
+                        Sản phẩm chính hãng, bảo hành 12 tháng toàn quốc. Vui lòng liên hệ nhân viên cửa hàng hoặc xem trực tiếp tại quầy để trải nghiệm và biết thêm thông số kỹ thuật chi tiết của dòng máy này.
+                    </p>
+                </div>
+
+                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="mt-auto">
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <div class="row g-3">
+                        <div class="col-sm-4">
+                            <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden">
+                                <span class="input-group-text bg-white border-0 fw-bold">SL</span>
+                                <input type="number" name="quantity" class="form-control border-0 text-center fw-bold text-primary" value="1" min="1" max="10">
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-4 shadow-sm h-100 d-flex align-items-center justify-content-center gap-2">
+                                <i class="fa fa-cart-plus fs-5"></i> THÊM VÀO GIỎ
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @if (ViewBag.RelatedProducts != null && ((IEnumerable<Product>)ViewBag.RelatedProducts).Any())
+    {
+        <h4 class="fw-bolder text-dark mb-4 mt-5 border-bottom pb-2">Sản phẩm cùng hãng</h4>
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            @foreach (var item in ViewBag.RelatedProducts)
+            {
+                <div class="col">
+                    <div class="card h-100 product-card border-0 p-2 shadow-sm">
+                        <a asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none">
+                            <div class="bg-light rounded-4 d-flex justify-content-center align-items-center p-3 mb-3" style="height: 180px;">
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" class="img-fluid" style="max-height: 100%; mix-blend-mode: multiply;">
+                                }
+                                else
+                                {
+                                    <i class="fa fa-mobile-alt fa-3x text-muted opacity-25"></i>
+                                }
+                            </div>
+                            <div class="card-body p-2 text-center">
+                                <h6 class="fw-bold text-dark text-truncate mb-2">@item.Name</h6>
+                                <h6 class="text-danger fw-bolder mb-0">@item.Price.ToString("N0")đ</h6>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

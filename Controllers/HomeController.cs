@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PhoneStore.Data;
@@ -9,33 +11,75 @@ namespace PhoneStore.Controllers
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public HomeController(ApplicationDbContext context)
+        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
+        // 1. TRANG CHỦ
         public async Task<IActionResult> Index()
         {
-            // Lấy 12 sản phẩm mới nhất đưa ra trang chủ
-            var products = await _context.Products
-                .Include(p => p.Category)
-                .OrderByDescending(p => p.Id)
-                .Take(12)
-                .ToListAsync();
-
+            var products = await _context.Products.Include(p => p.Category).OrderByDescending(p => p.Id).Take(12).ToListAsync();
             return View(products);
         }
 
-        public IActionResult Privacy()
+        // 2. TRANG DANH SÁCH SẢN PHẨM (SHOP)
+        public async Task<IActionResult> Shop(int? categoryId, string? searchString)
         {
-            return View();
+            var products = _context.Products.Include(p => p.Category).AsQueryable();
+
+            if (categoryId.HasValue) products = products.Where(p => p.CategoryId == categoryId.Value);
+            if (!string.IsNullOrEmpty(searchString)) products = products.Where(p => p.Name.Contains(searchString));
+
+            ViewBag.Categories = await _context.Categories.ToListAsync();
+            ViewBag.CurrentCategory = categoryId;
+            ViewBag.CurrentSearch = searchString;
+
+            return View(await products.OrderByDescending(p => p.Id).ToListAsync());
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        // 3. TRANG CHI TIẾT SẢN PHẨM (MỚI THÊM)
+        public async Task<IActionResult> Details(int? id)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            if (id == null) return NotFound();
+
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (product == null) return NotFound();
+
+            // Lấy 4 sản phẩm cùng hãng để làm gợi ý mua sắm
+            ViewBag.RelatedProducts = await _context.Products
+                .Where(p => p.CategoryId == product.CategoryId && p.Id != product.Id)
+                .Take(4).ToListAsync();
+
+            return View(product);
         }
+
+        // 4. LỊCH SỬ ĐƠN HÀNG
+        [Authorize]
+        public async Task<IActionResult> MyOrders()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Where(o => o.UserId == user.Id)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return View(orders);
+        }
+
+        public IActionResult Privacy() => View();
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

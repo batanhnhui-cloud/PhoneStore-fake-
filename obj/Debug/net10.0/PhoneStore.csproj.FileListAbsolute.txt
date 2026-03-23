@@ -679,4 +679,4 @@ D:\Đồ án ASP.NET - Copy\PhoneStore\PhoneStore\obj\Debug\net10.0\refint\Phone
 D:\Đồ án ASP.NET - Copy\PhoneStore\PhoneStore\obj\Debug\net10.0\PhoneStore.pdb
 D:\Đồ án ASP.NET - Copy\PhoneStore\PhoneStore\obj\Debug\net10.0\PhoneStore.genruntimeconfig.cache
 D:\Đồ án ASP.NET - Copy\PhoneStore\PhoneStore\obj\Debug\net10.0\ref\PhoneStore.dll
-D:\Đồ án ASP.NET - Copy\PhoneStore\PhoneStore\obj\Debug\net10.0\compressed\svssvkonut-{0}-wkz34q90yc-wkz34q90yc.gz
+D:\Đồ án ASP.NET - Copy\PhoneStore\PhoneStore\obj\Debug\net10.0\compressed\svssvkonut-{0}-fbrjkr141r-fbrjkr141r.gz

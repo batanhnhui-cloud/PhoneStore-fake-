@@ -24,9 +24,8 @@
                 </button>
                 
                 <div class="collapse navbar-collapse" id="navbarMain">
-                    <ul class="navbar-nav me-auto mx-4 mb-2 mb-lg-0 fw-semibold fs-5">
-                        <li class="nav-item"><a class="nav-link px-3" asp-controller="Home" asp-action="Index">Khám phá</a></li>
-                        <li class="nav-item"><a class="nav-link px-3" asp-controller="Product" asp-action="Index">Điện thoại</a></li>
+                    <ul class="navbar-nav me-auto mx-4 mb-2 mb-lg-0 fw-semibold fs-5"
+                        <li class="nav-item"><a class="nav-link px-3" asp-controller="Home" asp-action="Shop">Điện thoại</a></li>
                     </ul>
 
                     <ul class="navbar-nav align-items-center gap-2">
@@ -40,15 +39,11 @@
                         {
                             if (User.IsInRole("Admin") || User.IsInRole("Staff"))
                             {
-                                <li class="nav-item">
-                                    <a class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" asp-controller="Admin" asp-action="Dashboard">Vào Hệ thống</a>
-                                </li>
+                                <li class="nav-item"><a class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" asp-controller="Admin" asp-action="Dashboard">Vào Hệ thống</a></li>
                             }
                             else
                             {
-                                <li class="nav-item">
-                                    <a class="btn btn-outline-dark rounded-pill px-4 fw-bold" asp-controller="Home" asp-action="MyOrders">Đơn của tôi</a>
-                                </li>
+                                <li class="nav-item"><a class="btn btn-outline-dark rounded-pill px-4 fw-bold" asp-controller="Home" asp-action="MyOrders">Đơn của tôi</a></li>
                             }
 
                             <li class="nav-item dropdown ms-2">
