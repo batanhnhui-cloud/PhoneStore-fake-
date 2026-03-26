@@ -3,70 +3,150 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Hệ thống Quản trị</title>
+    <title>@ViewData["Title"] - SunMobile Admin</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
     <style>
-        body { background-color: #f8f9fa; }
-        .sidebar { min-height: 100vh; background: #212529; color: #fff; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
-        .sidebar a { color: rgba(255,255,255,0.8); text-decoration: none; padding: 12px 20px; display: block; font-weight: 500; border-radius: 8px; margin: 4px 12px; transition: all 0.3s; }
-        .sidebar a:hover, .sidebar a.active { background: #0d6efd; color: #fff; transform: translateX(5px); }
-        .sidebar .nav-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #6c757d; padding: 15px 20px 5px; font-weight: bold; }
-        .main-content { padding: 30px; }
+        :root {
+            --sun-primary: #f97316;
+            --sun-primary-hover: #ea580c;
+            --sun-dark: #0f172a;
+            --sun-sidebar: #1e293b;
+            --sun-bg: #f8fafc;
+        }
+        body { 
+            background-color: var(--sun-bg); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* SIDEBAR STYLING */
+        .sidebar { 
+            min-height: 100vh; 
+            background: var(--sun-sidebar); 
+            color: #fff; 
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05); 
+            transition: all 0.3s;
+        }
+        .sidebar-brand {
+            padding: 1.5rem;
+            background: var(--sun-dark);
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar a.menu-item { 
+            color: #cbd5e1; 
+            text-decoration: none; 
+            padding: 12px 20px; 
+            display: block; 
+            font-weight: 500; 
+            border-radius: 8px; 
+            margin: 4px 16px; 
+            transition: all 0.2s; 
+        }
+        .sidebar a.menu-item:hover, .sidebar a.menu-item.active { 
+            background: rgba(249, 115, 22, 0.15); 
+            color: var(--sun-primary); 
+            transform: translateX(5px); 
+        }
+        .sidebar .nav-title { 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            color: #64748b; 
+            padding: 20px 20px 10px; 
+            font-weight: 800; 
+        }
+
+        /* HEADER & MAIN CONTENT */
+        .main-content { 
+            height: 100vh; 
+            overflow-y: auto; 
+        }
+        .top-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        /* CARD STYLING TRONG ADMIN */
+        .card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .btn-sun {
+            background: linear-gradient(135deg, #f97316, #fb923c);
+            color: white;
+            border: none;
+        }
+        .btn-sun:hover {
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="d-flex">
         <nav class="sidebar flex-shrink-0" style="width: 280px;">
-            <div class="text-center py-4 border-bottom border-secondary">
-                <h3 class="fw-bolder text-white mb-0"><i class="fa fa-apple-alt text-primary me-2"></i>PhoneStore</h3>
+            <a href="#" class="sidebar-brand text-center border-bottom border-secondary border-opacity-25">
+                <h3 class="fw-bolder text-white mb-0">
+                    <i class="fa fa-sun me-2" style="color: var(--sun-primary);"></i>Sun<span style="color: var(--sun-primary);">Mobile</span>
+                </h3>
                 <p class="text-muted small mb-0 mt-1">Hệ Thống Quản Trị ERP</p>
-            </div>
+            </a>
 
-            <div class="mt-3">
+            <div class="mt-2 pb-5">
                 @if (User.IsInRole("Admin"))
                 {
-                    <div class="nav-title">BẢNG ĐIỀU KHIỂN GIÁM ĐỐC</div>
-                    <a asp-controller="Admin" asp-action="Dashboard"><i class="fa fa-chart-pie fa-fw me-2"></i>Tổng quan Doanh thu</a>
-                    <a asp-controller="Admin" asp-action="ManageInventory"><i class="fa fa-warehouse fa-fw me-2"></i>Kho Tổng Hệ Thống</a>
+                    <div class="nav-title">BẢNG ĐIỀU KHIỂN</div>
+                    <a asp-controller="Admin" asp-action="Dashboard" class="menu-item"><i class="fa fa-chart-pie fa-fw me-2"></i>Tổng quan Doanh thu</a>
+                    <a asp-controller="Admin" asp-action="ManageInventory" class="menu-item"><i class="fa fa-warehouse fa-fw me-2"></i>Kho Tổng Hệ Thống</a>
                     
-                    <div class="nav-title mt-2">QUẢN LÝ DANH MỤC</div>
-                    <a asp-controller="Product" asp-action="Index"><i class="fa fa-mobile-alt fa-fw me-2"></i>Sản phẩm & Giá</a>
-                    <a asp-controller="Admin" asp-action="ManageBranches"><i class="fa fa-store fa-fw me-2"></i>Hệ thống Chi nhánh</a>
-                    <a asp-controller="Admin" asp-action="ManageStaff"><i class="fa fa-users-cog fa-fw me-2"></i>Tài khoản Nhân viên</a>
+                    <div class="nav-title">QUẢN LÝ DANH MỤC</div>
+                    <a asp-controller="Product" asp-action="Index" class="menu-item"><i class="fa fa-mobile-alt fa-fw me-2"></i>Sản phẩm & Giá</a>
+                    <a asp-controller="Admin" asp-action="ManageBranches" class="menu-item"><i class="fa fa-store fa-fw me-2"></i>Hệ thống Chi nhánh</a>
+                    <a asp-controller="Admin" asp-action="ManageStaff" class="menu-item"><i class="fa fa-users-cog fa-fw me-2"></i>Tài khoản Nhân viên</a>
                 }
 
-                <div class="nav-title mt-2">NGHIỆP VỤ BÁN HÀNG</div>
-                <a asp-controller="Staff" asp-action="POS"><i class="fa fa-cash-register fa-fw me-2 text-success"></i>Bán hàng (POS)</a>
-                <a asp-controller="Staff" asp-action="OrderManagement"><i class="fa fa-shopping-cart fa-fw me-2"></i>Xử lý Đơn Online</a>
+                <div class="nav-title">NGHIỆP VỤ BÁN HÀNG</div>
+                <a asp-controller="Staff" asp-action="POS" class="menu-item"><i class="fa fa-cash-register fa-fw me-2 text-success"></i>Bán hàng (POS)</a>
+                <a asp-controller="Staff" asp-action="OrderManagement" class="menu-item"><i class="fa fa-shopping-cart fa-fw me-2"></i>Xử lý Đơn Online</a>
 
-                <div class="nav-title mt-2">NGHIỆP VỤ KHO BÃI</div>
-                <a asp-controller="Staff" asp-action="Inventory"><i class="fa fa-boxes fa-fw me-2 text-info"></i>Tồn kho Chi nhánh</a>
-                <a asp-controller="Staff" asp-action="ImportImei"><i class="fa fa-barcode fa-fw me-2"></i>Nhập kho IMEI</a>
-                <a asp-controller="Staff" asp-action="TransferStock"><i class="fa fa-truck-moving fa-fw me-2 text-warning"></i>Điều chuyển kho</a>
+                <div class="nav-title">NGHIỆP VỤ KHO BÃI</div>
+                <a asp-controller="Staff" asp-action="Inventory" class="menu-item"><i class="fa fa-boxes fa-fw me-2 text-info"></i>Tồn kho Chi nhánh</a>
+                <a asp-controller="Staff" asp-action="ImportImei" class="menu-item"><i class="fa fa-barcode fa-fw me-2"></i>Nhập kho IMEI</a>
+                <a asp-controller="Staff" asp-action="TransferStock" class="menu-item"><i class="fa fa-truck-moving fa-fw me-2 text-warning"></i>Điều chuyển kho</a>
 
-                <div class="nav-title mt-2">HỆ THỐNG</div>
-                <a asp-controller="Home" asp-action="Index"><i class="fa fa-globe fa-fw me-2"></i>Xem Cửa Hàng (Web)</a>
+                <div class="nav-title">HỆ THỐNG</div>
+                <a asp-controller="Home" asp-action="Index" class="menu-item"><i class="fa fa-globe fa-fw me-2"></i>Xem Cửa Hàng (Web)</a>
                 
                 <form asp-controller="Account" asp-action="Logout" method="post" class="mt-4 px-3">
                     <button type="submit" class="btn btn-outline-danger w-100 fw-bold rounded-pill">
-                        <i class="fa fa-sign-out-alt me-2"></i>Đăng xuất
+                        <i class="fa fa-sign-out-alt me-2"></i> Đăng xuất
                     </button>
                 </form>
             </div>
         </nav>
 
-        <main class="flex-grow-1 main-content bg-light overflow-auto" style="height: 100vh;">
-            <div class="d-flex justify-content-end align-items-center mb-4 pb-3 border-bottom">
-                <div class="d-flex align-items-center bg-white px-4 py-2 rounded-pill shadow-sm">
-                    <img src="https://ui-avatars.com/api/?name=@(User.Identity.Name)&background=0D8ABC&color=fff" class="rounded-circle me-2" style="width: 32px; height: 32px;" alt="Avatar">
-                    <span class="fw-bold text-dark">Xin chào, @User.Identity.Name?.Split('@')[0]</span>
-                    <span class="badge bg-primary ms-3">@(User.IsInRole("Admin") ? "Giám đốc" : "Nhân viên")</span>
+        <main class="flex-grow-1 main-content">
+            <div class="top-header d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0 fw-bold text-dark opacity-75"><i class="fa fa-bars me-2 d-none d-md-inline-block"></i>Không gian làm việc</h5>
+                <div class="d-flex align-items-center bg-white px-3 py-2 rounded-pill shadow-sm border">
+                    <img src="https://ui-avatars.com/api/?name=@(User.Identity.Name)&background=f97316&color=fff" class="rounded-circle me-2" style="width: 32px; height: 32px;" alt="Avatar">
+                    <span class="fw-bold text-dark small">@User.Identity.Name?.Split('@')[0]</span>
+                    <span class="badge ms-2" style="background-color: var(--sun-primary);">@(User.IsInRole("Admin") ? "Giám đốc" : "Nhân viên")</span>
                 </div>
             </div>
 
-            @RenderBody()
+            <div class="px-4 pb-5">
+                @RenderBody()
+            </div>
         </main>
     </div>
 

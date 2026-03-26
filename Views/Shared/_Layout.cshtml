@@ -3,42 +3,97 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Siêu thị PhoneStore</title>
+    <title>@ViewData["Title"] - SunMobile</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    <style>
+        :root {
+            --sun-primary: #f97316; /* Màu cam rực rỡ */
+            --sun-dark: #0f172a;    /* Màu đen sâu */
+            --sun-light: #f8fafc;
+        }
+        body { 
+            background-color: var(--sun-light); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        .navbar { 
+            background: rgba(255, 255, 255, 0.98) !important; 
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+        }
+        .brand-logo { 
+            font-size: 2rem; 
+            font-weight: 900; 
+            letter-spacing: -0.5px;
+            text-decoration: none;
+        }
+        .nav-item .nav-link { 
+            font-weight: 600; 
+            color: #475569 !important; 
+            transition: all 0.3s ease; 
+        }
+        .nav-item .nav-link:hover { 
+            color: var(--sun-primary) !important; 
+            transform: translateY(-2px);
+        }
+        .btn-sun {
+            background: linear-gradient(135deg, #f97316, #fb923c);
+            color: white;
+            font-weight: 700;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-sun:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(249, 115, 22, 0.3);
+            color: white;
+        }
+        /* Footer chuẩn E-commerce */
+        .modern-footer {
+            background-color: var(--sun-dark);
+            color: #94a3b8;
+            padding: 4rem 0 2rem;
+            margin-top: auto;
+        }
+        .modern-footer h5 {
+            color: #ffffff;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+    </style>
 </head>
-<body>
-    <header class="sticky-top shadow-sm bg-white" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
+<body class="d-flex flex-column min-vh-100">
+    
+    <header class="sticky-top">
         <nav class="navbar navbar-expand-lg navbar-light py-3">
             <div class="container">
-                <a class="navbar-brand fw-bold text-dark fs-3 d-flex align-items-center" asp-controller="Home" asp-action="Index">
-                    <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-2" style="width: 40px; height: 40px;">
-                        <i class="fa fa-apple-alt"></i>
-                    </div>
-                    Phone<span class="text-primary">Store</span>
+                <a class="brand-logo text-dark d-flex align-items-center me-5" asp-controller="Home" asp-action="Index">
+                    <i class="fa fa-sun text-warning me-2 fs-2" style="text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);"></i>
+                    Sun<span style="color: var(--sun-primary);">Mobile</span>
                 </a>
                 
                 <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
-                    <i class="fa fa-bars fs-3"></i>
+                    <i class="fa fa-bars fs-3 text-dark"></i>
                 </button>
                 
                 <div class="collapse navbar-collapse" id="navbarMain">
-                    <ul class="navbar-nav me-auto mx-4 mb-2 mb-lg-0 fw-semibold fs-5">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 fs-5 gap-3">
                         <li class="nav-item">
-                            <a class="nav-link px-3" asp-controller="Home" asp-action="Shop">Điện thoại</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="Shop"><i class="fa fa-mobile-alt me-1"></i> Điện thoại</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link px-3 text-primary" asp-controller="Home" asp-action="TrackOrder">
-                                <i class="fa fa-search me-1"></i>Tra cứu Đơn hàng
+                            <a class="nav-link" asp-controller="Home" asp-action="TrackOrder" style="color: var(--sun-primary) !important;">
+                                <i class="fa fa-map-marker-alt me-1"></i> Tra cứu Đơn
                             </a>
                         </li>
                     </ul>
 
-                    <ul class="navbar-nav align-items-center gap-2">
+                    <ul class="navbar-nav align-items-center gap-3">
                         <li class="nav-item">
-                            <a class="btn btn-light position-relative fw-bold text-dark px-3 py-2 border rounded-pill" asp-controller="Cart" asp-action="Index">
-                                <i class="fa fa-shopping-bag me-1 text-primary"></i> Giỏ hàng
+                            <a class="btn btn-light position-relative fw-bold text-dark px-4 py-2 border rounded-pill shadow-sm hover-lift" asp-controller="Cart" asp-action="Index">
+                                <i class="fa fa-shopping-cart me-2" style="color: var(--sun-primary);"></i> Giỏ hàng
                             </a>
                         </li>
 
@@ -46,25 +101,25 @@
                         {
                             if (User.IsInRole("Admin"))
                             {
-                                <li class="nav-item"><a class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" asp-controller="Admin" asp-action="Dashboard">Vào Hệ thống</a></li>
+                                <li class="nav-item"><a class="btn btn-dark rounded-pill px-4 py-2 fw-bold shadow-sm" asp-controller="Admin" asp-action="Dashboard"><i class="fa fa-chart-line me-2"></i>Quản trị viên</a></li>
                             }
                             else if (User.IsInRole("Staff"))
                             {
-                                <li class="nav-item"><a class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" asp-controller="Staff" asp-action="Inventory">Vào Hệ thống</a></li>
+                                <li class="nav-item"><a class="btn btn-dark rounded-pill px-4 py-2 fw-bold shadow-sm" asp-controller="Staff" asp-action="Inventory"><i class="fa fa-briefcase me-2"></i>Khu vực làm việc</a></li>
                             }
                             else
                             {
-                                <li class="nav-item"><a class="btn btn-outline-dark rounded-pill px-4 fw-bold" asp-controller="Home" asp-action="MyOrders">Đơn của tôi</a></li>
+                                <li class="nav-item"><a class="btn btn-outline-dark rounded-pill px-4 py-2 fw-bold" asp-controller="Home" asp-action="MyOrders"><i class="fa fa-history me-2"></i>Đơn của tôi</a></li>
                             }
 
-                            <li class="nav-item dropdown ms-2">
-                                <a class="nav-link dropdown-toggle fw-bold bg-light rounded-pill px-3 py-2" href="#" data-bs-toggle="dropdown">
-                                    👋 @User.Identity.Name?.Split('@')[0]
+                            <li class="nav-item dropdown ms-1">
+                                <a class="nav-link dropdown-toggle fw-bold bg-white border shadow-sm rounded-pill px-4 py-2 text-dark" href="#" data-bs-toggle="dropdown">
+                                    <i class="fa fa-user-circle me-1 text-muted"></i> @User.Identity.Name?.Split('@')[0]
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-3">
+                                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-3 p-2">
                                     <li>
-                                        <form asp-controller="Account" asp-action="Logout" method="post" class="m-0 p-2">
-                                            <button type="submit" class="dropdown-item text-danger fw-bold rounded-3">
+                                        <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                            <button type="submit" class="dropdown-item text-danger fw-bold rounded-3 py-2">
                                                 <i class="fa fa-sign-out-alt me-2"></i> Đăng xuất
                                             </button>
                                         </form>
@@ -75,7 +130,7 @@
                         else
                         {
                             <li class="nav-item"><a class="nav-link fw-bold text-muted px-3" asp-controller="Account" asp-action="Login">Đăng nhập</a></li>
-                            <li class="nav-item"><a class="btn btn-primary text-white rounded-pill px-4 fw-bold shadow-sm" asp-controller="Account" asp-action="Register">Đăng ký</a></li>
+                            <li class="nav-item"><a class="btn btn-sun rounded-pill px-4 py-2 shadow-sm" asp-controller="Account" asp-action="Register">Đăng ký ngay</a></li>
                         }
                     </ul>
                 </div>
@@ -83,22 +138,45 @@
         </nav>
     </header>
 
-    <div class="container main-content mt-4 mb-5" style="min-height: 65vh;">
+    <div class="container main-content mt-5 mb-5 flex-grow-1">
         <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="bg-white border-top py-5 mt-auto">
-        <div class="container text-center text-md-start">
-            <div class="row align-items-center">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <h4 class="fw-bold text-dark mb-1">PhoneStore</h4>
-                    <p class="text-muted small mb-0">Hệ thống phân phối điện thoại chính hãng hàng đầu.</p>
+    <footer class="modern-footer border-top-0">
+        <div class="container">
+            <div class="row gy-4 mb-4">
+                <div class="col-lg-4 col-md-6">
+                    <a class="brand-logo text-white mb-3 d-inline-block" href="#">
+                        <i class="fa fa-sun text-warning me-2"></i>Sun<span style="color: var(--sun-primary);">Mobile</span>
+                    </a>
+                    <p class="small opacity-75 pe-4">Hệ thống bán lẻ điện thoại di động chính hãng. Uy tín, chất lượng và dịch vụ hậu mãi hàng đầu.</p>
                 </div>
-                <div class="col-md-6 text-md-end text-muted small">
-                    &copy; @DateTime.Now.Year Bản quyền thuộc về bạn. Đồ án môn học xuất sắc.
+                <div class="col-lg-4 col-md-6">
+                    <h5>Chính sách</h5>
+                    <ul class="list-unstyled small opacity-75 lh-lg">
+                        <li><i class="fa fa-angle-right me-2 text-warning"></i>Bảo hành 12 tháng bằng IMEI</li>
+                        <li><i class="fa fa-angle-right me-2 text-warning"></i>Giao hàng hỏa tốc trong 2 giờ</li>
+                        <li><i class="fa fa-angle-right me-2 text-warning"></i>Đổi trả miễn phí 30 ngày</li>
+                    </ul>
                 </div>
+                <div class="col-lg-4 col-md-12">
+                    <h5>Đồ án môn học</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-white text-dark rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 45px; height: 45px;">
+                            <i class="fa fa-graduation-cap fs-5"></i>
+                        </div>
+                        <div>
+                            <p class="mb-0 fw-bold text-white">Được phát triển bởi</p>
+                            <p class="mb-0 small opacity-75">GitHub: batanhnhui</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="opacity-25" />
+            <div class="text-center small opacity-50 pt-3">
+                &copy; @DateTime.Now.Year SunMobile. Phiên bản bảo vệ Đồ án.
             </div>
         </div>
     </footer>

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PhoneStore.Data;
 using PhoneStore.Models;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace PhoneStore.Controllers
 {
@@ -19,29 +20,53 @@ namespace PhoneStore.Controllers
             _userManager = userManager;
         }
 
-        // 1. TRANG CHỦ
+        // 1. TRANG CHỦ (SUNMOBILE INDEX)
         public async Task<IActionResult> Index()
         {
-            var products = await _context.Products.Include(p => p.Category).OrderByDescending(p => p.Id).Take(12).ToListAsync();
+            var products = await _context.Products
+                .Include(p => p.Category)
+                .OrderByDescending(p => p.Id)
+                .Take(12)
+                .ToListAsync();
             return View(products);
         }
 
-        // 2. TRANG DANH SÁCH SẢN PHẨM (SHOP)
+        // 2. TRANG DANH SÁCH SẢN PHẨM (SHOP) - ĐÃ FIX LỖI DROPDOWN
         public async Task<IActionResult> Shop(int? categoryId, string? searchString)
         {
-            var products = _context.Products.Include(p => p.Category).AsQueryable();
+            var productsQuery = _context.Products.Include(p => p.Category).AsQueryable();
 
-            if (categoryId.HasValue) products = products.Where(p => p.CategoryId == categoryId.Value);
-            if (!string.IsNullOrEmpty(searchString)) products = products.Where(p => p.Name.Contains(searchString));
+            // Bộ lọc tìm kiếm theo tên
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                productsQuery = productsQuery.Where(p => p.Name.Contains(searchString));
+            }
 
-            ViewBag.Categories = await _context.Categories.ToListAsync();
+            // Bộ lọc theo hãng (Category)
+            if (categoryId.HasValue)
+            {
+                productsQuery = productsQuery.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            // QUAN TRỌNG: Fix lỗi "Cannot implicitly convert type... to SelectListItem"
+            var categories = await _context.Categories.ToListAsync();
+            ViewBag.Categories = categories.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Name,
+                Selected = categoryId.HasValue && c.Id == categoryId.Value
+            }).ToList();
+
             ViewBag.CurrentCategory = categoryId;
             ViewBag.CurrentSearch = searchString;
 
-            return View(await products.OrderByDescending(p => p.Id).ToListAsync());
+            var result = await productsQuery.OrderByDescending(p => p.Id).ToListAsync();
+            return View(result);
         }
 
-        // 3. TRANG CHI TIẾT SẢN PHẨM (MỚI THÊM)
+        // 3. TRANG CHI TIẾT SẢN PHẨM
+        // Lưu ý: Nếu Controller quản lý máy của bạn là ProductsController thì hàm này có thể không chạy.
+        // Nhưng nếu bạn dùng link asp-controller="Home" asp-action="Details" thì nó sẽ chạy hàm này.
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -60,7 +85,7 @@ namespace PhoneStore.Controllers
             return View(product);
         }
 
-        // 4. LỊCH SỬ ĐƠN HÀNG
+        // 4. LỊCH SỬ ĐƠN HÀNG (CHO USER ĐÃ ĐĂNG NHẬP)
         [Authorize]
         public async Task<IActionResult> MyOrders()
         {
@@ -77,9 +102,7 @@ namespace PhoneStore.Controllers
             return View(orders);
         }
 
-        // ==========================================
-        // TRA CỨU LỊCH SỬ MUA HÀNG (CHỈ CẦN SĐT)
-        // ==========================================
+        // 5. TRA CỨU LỊCH SỬ MUA HÀNG (CHỈ CẦN SĐT - KHÔNG CẦN LOGIN)
         [HttpGet]
         public IActionResult TrackOrder()
         {
@@ -95,11 +118,9 @@ namespace PhoneStore.Controllers
                 return View();
             }
 
-            // Lấy TẤT CẢ đơn hàng khớp với số điện thoại, sắp xếp đơn mới nhất lên đầu
             var orders = await _context.Orders
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                .Include(o => o.DeviceImeis) // Lấy danh sách IMEI
+                .Include(o => o.OrderDetails).ThenInclude(od => od.Product)
+                .Include(o => o.DeviceImeis)
                 .Include(o => o.Branch)
                 .Where(o => o.Phone == phone.Trim())
                 .OrderByDescending(o => o.OrderDate)
@@ -111,7 +132,6 @@ namespace PhoneStore.Controllers
                 return View();
             }
 
-            // Trả về một Danh sách đơn hàng
             return View(orders);
         }
 
