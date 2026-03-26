@@ -265,6 +265,90 @@ namespace PhoneStore.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("PhoneStore.Models.DeviceImei", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Imei")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("WarrantyActivationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("WarrantyExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("Imei")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("DeviceImeis");
+                });
+
+            modelBuilder.Entity("PhoneStore.Models.ImeiTransfer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DeviceImeiId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FromBranchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReceiveDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ToBranchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TransferDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceImeiId");
+
+                    b.HasIndex("FromBranchId");
+
+                    b.HasIndex("ToBranchId");
+
+                    b.ToTable("ImeiTransfers");
+                });
+
             modelBuilder.Entity("PhoneStore.Models.Inventory", b =>
                 {
                     b.Property<int>("Id")
@@ -453,6 +537,58 @@ namespace PhoneStore.Migrations
                     b.Navigation("Branch");
                 });
 
+            modelBuilder.Entity("PhoneStore.Models.DeviceImei", b =>
+                {
+                    b.HasOne("PhoneStore.Models.Branch", "Branch")
+                        .WithMany("DeviceImeis")
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PhoneStore.Models.Order", "Order")
+                        .WithMany("DeviceImeis")
+                        .HasForeignKey("OrderId");
+
+                    b.HasOne("PhoneStore.Models.Product", "Product")
+                        .WithMany("DeviceImeis")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("PhoneStore.Models.ImeiTransfer", b =>
+                {
+                    b.HasOne("PhoneStore.Models.DeviceImei", "DeviceImei")
+                        .WithMany()
+                        .HasForeignKey("DeviceImeiId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PhoneStore.Models.Branch", "FromBranch")
+                        .WithMany()
+                        .HasForeignKey("FromBranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PhoneStore.Models.Branch", "ToBranch")
+                        .WithMany()
+                        .HasForeignKey("ToBranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DeviceImei");
+
+                    b.Navigation("FromBranch");
+
+                    b.Navigation("ToBranch");
+                });
+
             modelBuilder.Entity("PhoneStore.Models.Inventory", b =>
                 {
                     b.HasOne("PhoneStore.Models.Branch", "Branch")
@@ -519,6 +655,8 @@ namespace PhoneStore.Migrations
 
             modelBuilder.Entity("PhoneStore.Models.Branch", b =>
                 {
+                    b.Navigation("DeviceImeis");
+
                     b.Navigation("Inventories");
 
                     b.Navigation("Staffs");
@@ -531,7 +669,14 @@ namespace PhoneStore.Migrations
 
             modelBuilder.Entity("PhoneStore.Models.Order", b =>
                 {
+                    b.Navigation("DeviceImeis");
+
                     b.Navigation("OrderDetails");
+                });
+
+            modelBuilder.Entity("PhoneStore.Models.Product", b =>
+                {
+                    b.Navigation("DeviceImeis");
                 });
 #pragma warning restore 612, 618
         }

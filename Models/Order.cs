@@ -28,7 +28,9 @@ namespace PhoneStore.Models
         public int? BranchId { get; set; }
         public virtual Branch? Branch { get; set; }
 
-        // Danh sách các máy trong đơn hàng này
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+
+        // Danh sách các máy trong đơn hàng này
+        public virtual ICollection<DeviceImei> DeviceImeis { get; set; } = new List<DeviceImei>();
     }
 }

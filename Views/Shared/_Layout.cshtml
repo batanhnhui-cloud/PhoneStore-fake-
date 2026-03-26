@@ -24,7 +24,7 @@
                 </button>
                 
                 <div class="collapse navbar-collapse" id="navbarMain">
-                    <ul class="navbar-nav me-auto mx-4 mb-2 mb-lg-0 fw-semibold fs-5"
+                    <ul class="navbar-nav me-auto mx-4 mb-2 mb-lg-0 fw-semibold fs-5">
                         <li class="nav-item"><a class="nav-link px-3" asp-controller="Home" asp-action="Shop">Điện thoại</a></li>
                     </ul>
 
@@ -37,9 +37,13 @@
 
                         @if (User.Identity.IsAuthenticated)
                         {
-                            if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                            if (User.IsInRole("Admin"))
                             {
                                 <li class="nav-item"><a class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" asp-controller="Admin" asp-action="Dashboard">Vào Hệ thống</a></li>
+                            }
+                            else if (User.IsInRole("Staff"))
+                            {
+                                <li class="nav-item"><a class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" asp-controller="Staff" asp-action="Inventory">Vào Hệ thống</a></li>
                             }
                             else
                             {
@@ -51,7 +55,13 @@
                                     👋 @User.Identity.Name?.Split('@')[0]
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-3">
-                                    <li><form asp-controller="Account" asp-action="Logout" method="post" class="m-0 p-2"><button type="submit" class="dropdown-item text-danger fw-bold rounded-3"><i class="fa fa-sign-out-alt me-2"></i> Đăng xuất</button></form></li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post" class="m-0 p-2">
+                                            <button type="submit" class="dropdown-item text-danger fw-bold rounded-3">
+                                                <i class="fa fa-sign-out-alt me-2"></i> Đăng xuất
+                                            </button>
+                                        </form>
+                                    </li>
                                 </ul>
                             </li>
                         }

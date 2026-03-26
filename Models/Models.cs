@@ -9,6 +9,7 @@ namespace PhoneStore.Models
         public string? Address { get; set; }
         public virtual ICollection<ApplicationUser>? Staffs { get; set; }
         public virtual ICollection<Inventory>? Inventories { get; set; }
+        public virtual ICollection<DeviceImei> DeviceImeis { get; set; } = new List<DeviceImei>();
     }
 
     public class Inventory

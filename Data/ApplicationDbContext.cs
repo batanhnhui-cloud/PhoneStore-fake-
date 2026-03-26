@@ -17,25 +17,29 @@ namespace PhoneStore.Data
         public DbSet<Inventory> Inventories { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<DeviceImei> DeviceImeis { get; set; }
+        public DbSet<ImeiTransfer> ImeiTransfers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // Cấu hình định dạng tiền tệ: decimal(18,2) 
-            // Nghĩa là: Tối đa 18 chữ số, trong đó có 2 chữ số sau dấu phẩy.
+            // [THÊM MỚI] Ép IMEI phải là duy nhất, không được trùng lặp trong toàn hệ thống
+            builder.Entity<DeviceImei>()
+                .HasIndex(d => d.Imei)
+                .IsUnique();
 
-            // 1. Cho bảng Sản phẩm
+            // 1. Cho bảng Sản phẩm (Code cũ của bạn)
             builder.Entity<Product>()
                 .Property(p => p.Price)
                 .HasColumnType("decimal(18,2)");
 
-            // 2. Cho bảng Đơn hàng
+            // 2. Cho bảng Đơn hàng (Code cũ của bạn)
             builder.Entity<Order>()
                 .Property(o => o.TotalAmount)
                 .HasColumnType("decimal(18,2)");
 
-            // 3. Cho bảng Chi tiết đơn hàng
+            // 3. Cho bảng Chi tiết đơn hàng (Code cũ của bạn)
             builder.Entity<OrderDetail>()
                 .Property(od => od.Price)
                 .HasColumnType("decimal(18,2)");
