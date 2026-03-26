@@ -1,0 +1,112 @@
+﻿@model IEnumerable<PhoneStore.Models.Order>
+@{
+    ViewData["Title"] = "Tra cứu Lịch sử mua hàng";
+}
+
+<div class="container mt-5 mb-5" style="min-height: 60vh;">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-4">
+                <h2 class="fw-bolder text-dark"><i class="fa fa-search-location text-primary me-2"></i>Tra Cứu Lịch Sử Mua Hàng</h2>
+                <p class="text-muted fs-5">Nhập số điện thoại của bạn để xem tất cả đơn hàng và thời hạn bảo hành.</p>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4 mb-5">
+                <div class="card-body p-4 p-md-5">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger fw-bold rounded-3 border-0"><i class="fa fa-exclamation-triangle me-2"></i> @ViewBag.Error</div>
+                    }
+
+                    <form asp-action="TrackOrder" method="post" class="row justify-content-center g-3">
+                        <div class="col-md-8">
+                            <div class="input-group input-group-lg shadow-sm">
+                                <span class="input-group-text bg-white border-end-0"><i class="fa fa-phone text-muted"></i></span>
+                                <input type="text" name="phone" class="form-control border-start-0 fw-bold py-3" placeholder="Nhập số điện thoại đã đặt mua..." required autocomplete="off" />
+                                <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm"><i class="fa fa-search me-2"></i>Tra cứu ngay</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                <h4 class="fw-bold mb-4 text-dark"><i class="fa fa-history text-primary me-2"></i>Bạn có @Model.Count() giao dịch</h4>
+                
+                foreach (var order in Model)
+                {
+                    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4 border-top border-primary border-4">
+                        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0 fw-bold text-dark d-inline-block me-2">Đơn hàng #@order.Id</h5>
+                                <span class="text-muted small"><i class="fa fa-clock me-1"></i>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                            @{
+                                var badgeClass = order.Status switch { "Pending" => "bg-warning text-dark", "Success" => "bg-success", "Cancelled" => "bg-danger", _ => "bg-secondary" };
+                                var statusText = order.Status switch { "Pending" => "Đang chờ duyệt", "Success" => "Đã giao hàng & Kích hoạt", "Cancelled" => "Đã hủy", _ => order.Status };
+                            }
+                            <span class="badge @badgeClass px-3 py-2 rounded-pill fs-6 shadow-sm">@statusText</span>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="table-responsive mb-4">
+                                <table class="table table-bordered mb-0">
+                                    <thead class="table-light text-muted small">
+                                        <tr>
+                                            <th>SẢN PHẨM</th>
+                                            <th class="text-center">SỐ LƯỢNG</th>
+                                            <th class="text-end">ĐƠN GIÁ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in order.OrderDetails)
+                                        {
+                                            <tr>
+                                                <td class="fw-bold text-primary">@item.Product?.Name</td>
+                                                <td class="text-center">@item.Quantity</td>
+                                                <td class="text-end text-danger fw-bold">@item.Price.ToString("N0") đ</td>
+                                            </tr>
+                                        }
+                                        <tr class="table-light">
+                                            <td colspan="2" class="text-end fw-bold">TỔNG CỘNG:</td>
+                                            <td class="text-end fw-bolder text-danger fs-5">@order.TotalAmount.ToString("N0") đ</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (order.Status == "Success" && order.DeviceImeis != null && order.DeviceImeis.Any())
+                            {
+                                <div class="alert alert-success border-0 shadow-sm rounded-3 mb-0">
+                                    <h6 class="fw-bolder mb-3"><i class="fa fa-shield-alt me-2"></i>THÔNG TIN BẢO HÀNH ĐIỆN TỬ</h6>
+                                    <ul class="list-group list-group-flush rounded-3">
+                                        @foreach (var device in order.DeviceImeis)
+                                        {
+                                            <li class="list-group-item bg-transparent px-0 border-success border-opacity-25 d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span class="fw-bold text-dark">IMEI: @device.Imei</span><br />
+                                                    <small class="text-muted">Kích hoạt: @device.WarrantyActivationDate?.ToString("dd/MM/yyyy")</small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge bg-success rounded-pill px-3">Bảo hành đến</span><br />
+                                                    <span class="fw-bold text-danger">@device.WarrantyExpirationDate?.ToString("dd/MM/yyyy")</span>
+                                                </div>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                            else if (order.Status == "Pending")
+                            {
+                                <div class="alert alert-warning border-0 shadow-sm rounded-3 text-center mb-0">
+                                    <i class="fa fa-box-open fs-4 d-block mb-2"></i>
+                                    Đơn hàng đang chờ xử lý. Mã IMEI và thông tin bảo hành sẽ hiển thị tại đây sau khi xuất kho thành công!
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

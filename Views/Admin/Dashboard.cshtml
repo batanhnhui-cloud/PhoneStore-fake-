@@ -1,167 +1,81 @@
-﻿@{
-    ViewData["Title"] = "Tổng quan hệ thống";
+﻿@model IEnumerable<PhoneStore.Models.Order>
+@{
+    ViewData["Title"] = "Dashboard Tổng Quan";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    
-    decimal totalRev = ViewBag.TotalRevenue ?? 0;
-    int totalOrd = ViewBag.TotalOrders ?? 0;
-    int totalUsr = ViewBag.TotalUsers ?? 0;
-    
-    var lowStockItems = ViewBag.LowStockItems as List<PhoneStore.Models.Inventory>;
-    var topProducts = ViewBag.TopProducts as IEnumerable<dynamic>;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-primary"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển Tổng quan</h2>
-    <span class="text-muted"><i class="fa fa-calendar-alt me-1"></i> Hôm nay: @DateTime.Now.ToString("dd/MM/yyyy")</span>
-</div>
+<div class="container-fluid px-4 mb-5">
+    <h2 class="fw-bolder text-dark mb-4"><i class="fa fa-chart-line text-primary me-2"></i>Tổng Quan Hệ Thống</h2>
 
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card bg-success text-white shadow border-0 rounded-4">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase opacity-75 fw-bold mb-1">Tổng doanh thu</h6>
-                        <h3 class="fw-bold mb-0">@totalRev.ToString("N0") đ</h3>
-                    </div>
-                    <i class="fa fa-wallet fa-3x opacity-50"></i>
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 border-start border-primary border-5 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs fw-bold text-primary text-uppercase mb-1">Doanh thu (Thành công)</div>
+                    <div class="h4 mb-0 fw-bold text-dark">@(ViewBag.TotalRevenue?.ToString("N0") ?? "0") đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 border-start border-success border-5 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs fw-bold text-success text-uppercase mb-1">Tổng thiết bị sẵn bán</div>
+                    <div class="h4 mb-0 fw-bold text-dark">@ViewBag.TotalDevices máy</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 border-start border-info border-5 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs fw-bold text-info text-uppercase mb-1">Tổng Đơn Hàng</div>
+                    <div class="h4 mb-0 fw-bold text-dark">@ViewBag.TotalOrders đơn</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 border-start border-warning border-5 shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs fw-bold text-warning text-uppercase mb-1">Chi nhánh hoạt động</div>
+                    <div class="h4 mb-0 fw-bold text-dark">@ViewBag.TotalBranches</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card bg-primary text-white shadow border-0 rounded-4">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase opacity-75 fw-bold mb-1">Đơn hàng thành công</h6>
-                        <h3 class="fw-bold mb-0">@totalOrd Đơn</h3>
-                    </div>
-                    <i class="fa fa-shopping-bag fa-3x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-warning text-dark shadow border-0 rounded-4">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase opacity-75 fw-bold mb-1">Tổng khách hàng</h6>
-                        <h3 class="fw-bold mb-0">@totalUsr Người</h3>
-                    </div>
-                    <i class="fa fa-users fa-3x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-md-8 mb-4">
-        <div class="card shadow border-0 h-100">
-            <div class="card-header bg-white py-3 fw-bold text-dark border-bottom-0">
-                <i class="fa fa-chart-bar text-primary me-2"></i>Doanh thu 7 ngày gần nhất
-            </div>
-            <div class="card-body">
-                <canvas id="revenueChart" height="100"></canvas>
-            </div>
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom py-3">
+            <h6 class="m-0 fw-bold text-dark"><i class="fa fa-clock text-muted me-2"></i>5 Giao dịch gần nhất</h6>
         </div>
-    </div>
-
-    <div class="col-md-4 mb-4">
-        <div class="card shadow border-0 h-100">
-            <div class="card-header bg-white py-3 fw-bold text-dark border-bottom-0">
-                <i class="fa fa-fire text-danger me-2"></i>Top 5 Máy bán chạy
-            </div>
-            <ul class="list-group list-group-flush">
-                @if (topProducts != null && topProducts.Any())
-                {
-                    int rank = 1;
-                    foreach (var item in topProducts)
-                    {
-                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                            <div>
-                                <span class="badge bg-dark rounded-circle me-2">#@rank</span>
-                                <span class="fw-bold">@item.ProductName</span>
-                            </div>
-                            <span class="badge bg-success rounded-pill">Đã bán: @item.TotalSold</span>
-                        </li>
-                        rank++;
-                    }
-                }
-                else
-                {
-                    <li class="list-group-item text-muted text-center py-4">Chưa có dữ liệu bán hàng.</li>
-                }
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div class="card shadow border-0 mt-2 border-start border-danger border-5">
-    <div class="card-header bg-white py-3 fw-bold text-danger border-bottom-0">
-        <i class="fa fa-exclamation-triangle me-2"></i>Cảnh báo: Máy sắp hết tại các chi nhánh (Dưới 5 cái)
-    </div>
-    <div class="card-body p-0">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th class="ps-4">Tên Sản phẩm</th>
-                    <th>Chi nhánh</th>
-                    <th class="text-center text-danger">Tồn kho hiện tại</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (lowStockItems != null && lowStockItems.Any())
-                {
-                    @foreach (var item in lowStockItems)
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Chi nhánh</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
                     {
                         <tr>
-                            <td class="ps-4 fw-bold">@item.Product?.Name</td>
-                            <td><i class="fa fa-store text-muted me-1"></i> @item.Branch?.Name</td>
-                            <td class="text-center">
-                                <span class="badge bg-danger fs-6 px-3 py-2 animate__animated animate__pulse animate__infinite">Chỉ còn @item.StockQuantity</span>
+                            <td class="ps-4 fw-bold text-primary">@item.CustomerName</td>
+                            <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.Branch?.Name</td>
+                            <td class="fw-bold text-danger">@item.TotalAmount.ToString("N0") đ</td>
+                            <td>
+                                @{
+                                    var badge = item.Status switch { "Pending" => "bg-warning text-dark", "Success" => "bg-success", _ => "bg-danger" };
+                                    var text = item.Status switch { "Pending" => "Chờ duyệt", "Success" => "Thành công", _ => "Đã hủy" };
+                                }
+                                <span class="badge @badge rounded-pill">@text</span>
                             </td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr><td colspan="3" class="text-center text-success py-4 fw-bold"><i class="fa fa-check-circle me-1"></i> Kho hàng các chi nhánh đều đang rất dồi dào!</td></tr>
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        const revenueChart = new Chart(ctx, {
-        type: 'bar', // Có thể đổi thành 'line' nếu thích biểu đồ dây
-        data: {
-        labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartLabels)),
-        datasets: [{
-        label: 'Doanh thu (VNĐ)',
-        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartData)),
-        backgroundColor: 'rgba(13, 110, 253, 0.7)',
-        borderColor: 'rgba(13, 110, 253, 1)',
-        borderWidth: 1,
-        borderRadius: 5
-        }]
-        },
-        options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-        y: {
-        beginAtZero: true,
-        ticks: { callback: function(value) { return value.toLocaleString('vi-VN') + ' đ'; } }
-        }
-        }
-        }
-        });
-    </script>
-}

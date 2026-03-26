@@ -77,6 +77,44 @@ namespace PhoneStore.Controllers
             return View(orders);
         }
 
+        // ==========================================
+        // TRA CỨU LỊCH SỬ MUA HÀNG (CHỈ CẦN SĐT)
+        // ==========================================
+        [HttpGet]
+        public IActionResult TrackOrder()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TrackOrder(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                ViewBag.Error = "Vui lòng nhập số điện thoại để tra cứu!";
+                return View();
+            }
+
+            // Lấy TẤT CẢ đơn hàng khớp với số điện thoại, sắp xếp đơn mới nhất lên đầu
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Include(o => o.DeviceImeis) // Lấy danh sách IMEI
+                .Include(o => o.Branch)
+                .Where(o => o.Phone == phone.Trim())
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            if (!orders.Any())
+            {
+                ViewBag.Error = $"Không tìm thấy lịch sử mua hàng nào với số điện thoại {phone}.";
+                return View();
+            }
+
+            // Trả về một Danh sách đơn hàng
+            return View(orders);
+        }
+
         public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

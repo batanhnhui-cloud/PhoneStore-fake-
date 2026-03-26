@@ -1,144 +1,64 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PhoneStore.Data;
 using PhoneStore.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace PhoneStore.Controllers
 {
-    [Authorize(Roles = "Admin,Staff")]
+    // Tạo một ViewModel nhỏ để chứa dữ liệu Thống kê kho
+    public class InventoryStatVM
+    {
+        public string BranchName { get; set; } = null!;
+        public string ProductName { get; set; } = null!;
+        public int AvailableCount { get; set; }
+    }
+
+    [Authorize(Roles = "Staff, Admin")]
     public class StaffController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
 
-        public StaffController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public StaffController(ApplicationDbContext context)
         {
-            _context = context; _userManager = userManager;
+            _context = context;
         }
 
-        public async Task<IActionResult> OrderManagement()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            // Include thêm OrderDetails và Product để hiện tên máy trong đơn hàng
-            var query = _context.Orders
-                .Include(o => o.Branch)
-                .Include(o => o.OrderDetails)
-                .ThenInclude(d => d.Product)
-                .AsQueryable();
-
-            if (!User.IsInRole("Admin") && user.BranchId.HasValue)
-                query = query.Where(o => o.BranchId == user.BranchId);
-
-            return View(await query.OrderByDescending(o => o.OrderDate).ToListAsync());
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> UpdateOrderStatus(int orderId, string status)
-        {
-            var order = await _context.Orders.FindAsync(orderId);
-            if (order != null) { order.Status = status; await _context.SaveChangesAsync(); }
-            return RedirectToAction(nameof(OrderManagement));
-        }
-
+        // ==========================================
+        // 1. GIAO DIỆN TỔNG QUAN KHO (INVENTORY)
+        // ==========================================
+        [HttpGet]
         public async Task<IActionResult> Inventory()
         {
-            var user = await _userManager.GetUserAsync(User);
-            var query = _context.Inventories.Include(i => i.Product).Include(i => i.Branch).AsQueryable();
-            if (!User.IsInRole("Admin") && user.BranchId.HasValue) query = query.Where(i => i.BranchId == user.BranchId);
-            return View(await query.ToListAsync());
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> QuickUpdateStock(int productId, int branchId, int adjustment)
-        {
-            var inv = await _context.Inventories.FirstOrDefaultAsync(i => i.ProductId == productId && i.BranchId == branchId);
-            if (inv != null) { inv.StockQuantity += adjustment; if (inv.StockQuantity < 0) inv.StockQuantity = 0; await _context.SaveChangesAsync(); }
-            return RedirectToAction(nameof(Inventory));
-        }
-
-        // ==========================================
-        // TÍNH NĂNG BÁN HÀNG TẠI QUẦY (POS)
-        // ==========================================
-
-        [HttpGet]
-        public async Task<IActionResult> POS()
-        {
-            var user = await _userManager.GetUserAsync(User);
-
-            // Chỉ lấy các sản phẩm CÒN HÀNG tại chi nhánh của nhân viên này
-            var inventory = await _context.Inventories
-                .Include(i => i.Product)
-                .Where(i => i.BranchId == user.BranchId && i.StockQuantity > 0)
+            // Nhóm và đếm số lượng máy đang "Available" (Sẵn sàng bán) theo từng Sản phẩm và Chi nhánh
+            var stats = await _context.DeviceImeis
+                .Include(d => d.Product)
+                .Include(d => d.Branch)
+                .Where(d => d.Status == "Available")
+                .GroupBy(d => new { d.BranchId, BranchName = d.Branch!.Name, d.ProductId, ProductName = d.Product!.Name })
+                .Select(g => new InventoryStatVM
+                {
+                    BranchName = g.Key.BranchName,
+                    ProductName = g.Key.ProductName,
+                    AvailableCount = g.Count()
+                })
                 .ToListAsync();
 
-            ViewBag.Inventory = inventory;
-            return View();
+            return View(stats);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CheckoutPOS(string customerName, string phone, int productId, int quantity)
-        {
-            var user = await _userManager.GetUserAsync(User);
-            var product = await _context.Products.FindAsync(productId);
-            var inv = await _context.Inventories.FirstOrDefaultAsync(i => i.ProductId == productId && i.BranchId == user.BranchId);
-
-            // 1. Kiểm tra kho
-            if (inv == null || inv.StockQuantity < quantity)
-            {
-                TempData["ErrorMessage"] = "Lỗi: Số lượng trong kho không đủ để bán!";
-                return RedirectToAction(nameof(POS));
-            }
-
-            // 2. Trừ tồn kho ngay lập tức
-            inv.StockQuantity -= quantity;
-
-            // 3. Tạo hóa đơn (Ghi nhận nhân viên nào đã bán để tính KPI sau này)
-            var order = new Order
-            {
-                UserId = user.Id, // Lấy ID của nhân viên đang thao tác
-                CustomerName = customerName + " (Khách mua tại quầy)",
-                Phone = phone,
-                Address = "Mua trực tiếp tại chi nhánh",
-                BranchId = user.BranchId,
-                TotalAmount = product.Price * quantity,
-                Status = "Success", // Đơn tại quầy mặc định là thành công
-                OrderDate = DateTime.Now
-            };
-
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync(); // Lưu để lấy ID Đơn hàng
-
-            // 4. Lưu chi tiết máy khách mua
-            var detail = new OrderDetail
-            {
-                OrderId = order.Id,
-                ProductId = productId,
-                Quantity = quantity,
-                Price = product.Price
-            };
-
-            _context.OrderDetails.Add(detail);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = $"Đã chốt đơn thành công cho khách {customerName}!";
-            return RedirectToAction(nameof(OrderManagement));
-        }
-
-        // 1. HIỂN THỊ FORM NHẬP KHO IMEI
+        // ==========================================
+        // 2. NHẬP KHO BẰNG CÁCH QUÉT MÃ IMEI
+        // ==========================================
         [HttpGet]
         public async Task<IActionResult> ImportImei()
         {
-            // Lấy danh sách Chi nhánh và Điện thoại từ Database truyền sang Giao diện
             ViewBag.Branches = new SelectList(await _context.Branches.ToListAsync(), "Id", "Name");
             ViewBag.Products = new SelectList(await _context.Products.ToListAsync(), "Id", "Name");
             return View();
         }
 
-        // 2. XỬ LÝ LƯU HÀNG LOẠT IMEI VÀO DATABASE
         [HttpPost]
         public async Task<IActionResult> ImportImei(int branchId, int productId, string imeiList)
         {
@@ -148,10 +68,9 @@ namespace PhoneStore.Controllers
                 return RedirectToAction(nameof(ImportImei));
             }
 
-            // Tách chuỗi dữ liệu thành từng dòng (hỗ trợ cả dấu xuống dòng và dấu phẩy)
             var imeis = imeiList.Split(new[] { '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries)
                                 .Select(i => i.Trim())
-                                .Distinct() // Loại bỏ các mã nhập trùng lặp trong cùng 1 lần nhập
+                                .Distinct()
                                 .ToList();
 
             int successCount = 0;
@@ -159,50 +78,61 @@ namespace PhoneStore.Controllers
 
             foreach (var imei in imeis)
             {
-                // Kiểm tra sơ bộ: IMEI phải đủ 15 số
-                if (imei.Length != 15 || !imei.All(char.IsDigit)) continue;
+                if (imei.Length != 15 || !imei.All(char.IsDigit)) continue; // Bỏ qua nếu không đúng chuẩn 15 số
 
-                // Kiểm tra xem mã này đã từng tồn tại trong Database chưa (Chống trùng lặp toàn hệ thống)
                 bool exists = await _context.DeviceImeis.AnyAsync(d => d.Imei == imei);
                 if (exists)
                 {
                     duplicateCount++;
-                    continue;
+                    continue; // Trùng lặp thì bỏ qua
                 }
 
-                // Nếu hợp lệ, tạo máy mới và đưa vào kho
-                var newDevice = new DeviceImei
+                _context.DeviceImeis.Add(new DeviceImei
                 {
                     Imei = imei,
                     ProductId = productId,
                     BranchId = branchId,
-                    Status = "Available" // Trạng thái: Sẵn sàng bán
-                };
-                _context.DeviceImeis.Add(newDevice);
+                    Status = "Available"
+                });
                 successCount++;
             }
 
             await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = $"✅ Đã nhập kho thành công {successCount} thiết bị mới. Bỏ qua {duplicateCount} mã lỗi/trùng lặp.";
-            return RedirectToAction(nameof(ImportImei));
+            TempData["SuccessMessage"] = $"Đã nhập kho thành công {successCount} máy. Bỏ qua {duplicateCount} mã lỗi/trùng lặp.";
+            return RedirectToAction(nameof(Inventory)); // Nhập xong quay về xem Tồn kho
         }
 
-        // 3. MỞ GIAO DIỆN QUÉT IMEI ĐỂ XUẤT BÁN (XỬ LÝ ĐƠN HÀNG)
+        // ==========================================
+        // 3. DANH SÁCH ĐƠN HÀNG ONLINE CẦN XỬ LÝ
+        // ==========================================
+        [HttpGet]
+        public async Task<IActionResult> OrderManagement()
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Include(o => o.Branch)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return View(orders);
+        }
+
+        // ==========================================
+        // 4. QUÉT MÃ IMEI ĐỂ XUẤT KHO & CHỐT ĐƠN
+        // ==========================================
         [HttpGet]
         public async Task<IActionResult> FulfillOrder(int id)
         {
             var order = await _context.Orders
                 .Include(o => o.OrderDetails)
                 .ThenInclude(od => od.Product)
-                .Include(o => o.Branch)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null || order.Status != "Pending") return RedirectToAction(nameof(OrderManagement));
             return View(order);
         }
 
-        // 4. KIỂM TRA MÃ IMEI VÀ CHỐT ĐƠN (KÍCH HOẠT BẢO HÀNH)
         [HttpPost]
         public async Task<IActionResult> FulfillOrder(int orderId, List<string> scannedImeis)
         {
@@ -212,44 +142,247 @@ namespace PhoneStore.Controllers
 
             if (order == null) return NotFound();
 
-            // Lọc bỏ các ô nhập rỗng
             scannedImeis = scannedImeis.Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
-
-            // Đếm tổng số lượng máy mà khách đặt trong đơn này
             int totalQuantityRequired = order.OrderDetails.Sum(od => od.Quantity);
 
             if (scannedImeis.Count != totalQuantityRequired)
             {
-                TempData["ErrorMessage"] = $"Lỗi: Khách đặt mua {totalQuantityRequired} máy, nhưng bạn mới quét {scannedImeis.Count} mã IMEI.";
+                TempData["ErrorMessage"] = $"Lỗi: Đơn này cần giao {totalQuantityRequired} máy, nhưng bạn mới quét {scannedImeis.Count} mã.";
                 return RedirectToAction(nameof(FulfillOrder), new { id = orderId });
             }
 
-            // Xử lý kiểm tra từng mã IMEI được quét
             foreach (var imei in scannedImeis)
             {
-                // Tìm máy trong kho: Phải khớp IMEI, Phải đang "Available", và Phải nằm đúng ở Chi nhánh đang xử lý đơn
                 var device = await _context.DeviceImeis
-                    .FirstOrDefaultAsync(d => d.Imei == imei && d.Status == "Available" && d.BranchId == order.BranchId);
+                    .FirstOrDefaultAsync(d => d.Imei == imei && d.Status == "Available");
 
                 if (device == null)
                 {
-                    TempData["ErrorMessage"] = $"Lỗi: Mã IMEI [{imei}] không hợp lệ! (Có thể do nhập sai, máy không nằm ở chi nhánh này, hoặc máy đã bị bán).";
+                    TempData["ErrorMessage"] = $"Lỗi: Máy có mã [{imei}] không hợp lệ hoặc đã bị bán cho người khác!";
                     return RedirectToAction(nameof(FulfillOrder), new { id = orderId });
                 }
 
-                // CẬP NHẬT TRẠNG THÁI MÁY & KÍCH HOẠT BẢO HÀNH
-                device.Status = "Sold"; // Đổi thành Đã bán
-                device.OrderId = order.Id; // Gắn vào đơn hàng này
-                device.WarrantyActivationDate = DateTime.Now; // Ngày kích hoạt là NGAY BÂY GIỜ
-                device.WarrantyExpirationDate = DateTime.Now.AddMonths(12); // Hạn bảo hành +12 tháng
+                // Gắn máy cho đơn hàng và kích hoạt bảo hành
+                device.Status = "Sold";
+                device.OrderId = order.Id;
+                device.WarrantyActivationDate = DateTime.Now;
+                device.WarrantyExpirationDate = DateTime.Now.AddMonths(12);
             }
 
-            // Cập nhật đơn hàng thành công
-            order.Status = "Success";
+            order.Status = "Success"; // Đổi trạng thái đơn thành Thành công
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"✅ Chốt đơn #{orderId} thành công! Các thiết bị đã được trừ kho và kích hoạt bảo hành điện tử.";
+            TempData["SuccessMessage"] = $"✅ Đã xuất kho thành công Đơn hàng #{orderId}!";
             return RedirectToAction(nameof(OrderManagement));
+        }
+
+        // ==========================================
+        // 5. HỦY ĐƠN HÀNG HOẶC ĐỔI TRẠNG THÁI KHÁC
+        // ==========================================
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrderStatus(int id, string status)
+        {
+            // Lấy đơn hàng bao gồm cả các máy (IMEI) đã xuất cho đơn này
+            var order = await _context.Orders
+                .Include(o => o.DeviceImeis)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order != null)
+            {
+                order.Status = status;
+
+                // TÍNH NĂNG ĐỈNH CAO: Nếu đơn hàng bị Hủy (Cancelled), tự động nhả lại các máy về Kho
+                if (status == "Cancelled" && order.DeviceImeis != null)
+                {
+                    foreach (var device in order.DeviceImeis)
+                    {
+                        device.Status = "Available"; // Sẵn sàng bán lại
+                        device.OrderId = null; // Gỡ máy khỏi đơn hàng
+                        device.WarrantyActivationDate = null; // Hủy kích hoạt bảo hành
+                        device.WarrantyExpirationDate = null;
+                    }
+                    TempData["SuccessMessage"] = $"Đã hủy đơn #{id} và tự động nhập lại các máy vào kho thành công!";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = $"Đã cập nhật trạng thái đơn #{id} thành công!";
+                }
+
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(OrderManagement));
+        }
+
+        // ==========================================
+        // 6. BÁN HÀNG TẠI QUẦY (POS - QUÉT IMEI TẠO HÓA ĐƠN)
+        // ==========================================
+        [HttpGet]
+        public async Task<IActionResult> POS()
+        {
+            // Lấy danh sách Chi nhánh cho nhân viên chọn quầy họ đang đứng
+            ViewBag.Branches = new SelectList(await _context.Branches.ToListAsync(), "Id", "Name");
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> POS(string customerName, string phone, int branchId, string scannedImeis)
+        {
+            if (string.IsNullOrWhiteSpace(scannedImeis))
+            {
+                TempData["ErrorMessage"] = "Vui lòng quét ít nhất 1 mã IMEI để bán!";
+                return RedirectToAction(nameof(POS));
+            }
+
+            // Tách các mã IMEI vừa quét
+            var imeis = scannedImeis.Split(new[] { '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(i => i.Trim()).Distinct().ToList();
+
+            // Tìm các máy trong Database khớp với mã IMEI vừa quét (Phải đang Available và đúng Chi nhánh)
+            var validDevices = await _context.DeviceImeis
+                .Include(d => d.Product)
+                .Where(d => imeis.Contains(d.Imei) && d.Status == "Available" && d.BranchId == branchId)
+                .ToListAsync();
+
+            // Nếu số máy tìm thấy không khớp với số mã quét (tức là có mã sai/mã ảo)
+            if (validDevices.Count != imeis.Count)
+            {
+                TempData["ErrorMessage"] = "Cảnh báo: Có mã IMEI không tồn tại, đã bán, hoặc không nằm trong kho của Chi nhánh này!";
+                return RedirectToAction(nameof(POS));
+            }
+
+            // 1. TẠO ĐƠN HÀNG MỚI (Trạng thái: Success - Vì khách mua trực tiếp trả tiền luôn)
+            var newOrder = new Order
+            {
+                CustomerName = string.IsNullOrWhiteSpace(customerName) ? "Khách lẻ" : customerName,
+                Phone = phone ?? "",
+                Address = "Mua trực tiếp tại quầy",
+                OrderDate = DateTime.Now,
+                Status = "Success",
+                BranchId = branchId,
+                TotalAmount = validDevices.Sum(d => d.Product!.Price) // Cộng tổng tiền các máy đã quét
+            };
+            _context.Orders.Add(newOrder);
+            await _context.SaveChangesAsync(); // Lưu để lấy ID đơn hàng
+
+            // 2. TẠO CHI TIẾT ĐƠN HÀNG (Gom nhóm nếu khách mua 2 cái cùng loại)
+            var productGroups = validDevices.GroupBy(d => d.ProductId);
+            foreach (var group in productGroups)
+            {
+                _context.OrderDetails.Add(new OrderDetail
+                {
+                    OrderId = newOrder.Id,
+                    ProductId = group.Key,
+                    Quantity = group.Count(),
+                    Price = group.First().Product!.Price
+                });
+            }
+
+            // 3. CẬP NHẬT TRẠNG THÁI IMEI VÀ KÍCH HOẠT BẢO HÀNH
+            foreach (var device in validDevices)
+            {
+                device.Status = "Sold";
+                device.OrderId = newOrder.Id;
+                device.WarrantyActivationDate = DateTime.Now;
+                device.WarrantyExpirationDate = DateTime.Now.AddMonths(12);
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"✅ TING TING! Đã tạo hóa đơn #{newOrder.Id} thành công. Tổng thu: {newOrder.TotalAmount.ToString("N0")}đ.";
+            return RedirectToAction(nameof(POS));
+        }
+
+        // ==========================================
+        // 7. LUÂN CHUYỂN HÀNG GIỮA CÁC CHI NHÁNH
+        // ==========================================
+        [HttpGet]
+        public async Task<IActionResult> TransferStock()
+        {
+            ViewBag.Branches = new SelectList(await _context.Branches.ToListAsync(), "Id", "Name");
+
+            // Lấy danh sách các phiếu luân chuyển đang "Đi trên đường" (Pending)
+            var pendingTransfers = await _context.ImeiTransfers
+                .Include(t => t.DeviceImei)
+                .ThenInclude(d => d.Product)
+                .Include(t => t.FromBranch)
+                .Include(t => t.ToBranch)
+                .Where(t => t.Status == "Pending")
+                .OrderByDescending(t => t.TransferDate)
+                .ToListAsync();
+
+            return View(pendingTransfers);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateTransfer(int fromBranchId, int toBranchId, string scannedImeis)
+        {
+            if (fromBranchId == toBranchId)
+            {
+                TempData["ErrorMessage"] = "Lỗi: Chi nhánh Xuất và Chi nhánh Nhận không được trùng nhau!";
+                return RedirectToAction(nameof(TransferStock));
+            }
+
+            if (string.IsNullOrWhiteSpace(scannedImeis))
+            {
+                TempData["ErrorMessage"] = "Vui lòng quét ít nhất 1 mã IMEI để chuyển!";
+                return RedirectToAction(nameof(TransferStock));
+            }
+
+            var imeis = scannedImeis.Split(new[] { '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(i => i.Trim()).Distinct().ToList();
+
+            // Tìm máy trong kho Xuất (Phải đang Available)
+            var validDevices = await _context.DeviceImeis
+                .Where(d => imeis.Contains(d.Imei) && d.Status == "Available" && d.BranchId == fromBranchId)
+                .ToListAsync();
+
+            if (validDevices.Count != imeis.Count)
+            {
+                TempData["ErrorMessage"] = "Lỗi: Có mã IMEI không hợp lệ, không nằm ở kho xuất, hoặc đã bị bán mất rồi!";
+                return RedirectToAction(nameof(TransferStock));
+            }
+
+            foreach (var device in validDevices)
+            {
+                device.Status = "Transferring"; // Đóng băng máy: Đang đi trên đường, không được phép bán!
+
+                _context.ImeiTransfers.Add(new ImeiTransfer
+                {
+                    DeviceImeiId = device.Id,
+                    FromBranchId = fromBranchId,
+                    ToBranchId = toBranchId,
+                    TransferDate = DateTime.Now,
+                    Status = "Pending" // Đang chờ chi nhánh kia nhận
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = $"✅ Đã tạo phiếu xuất kho luân chuyển {validDevices.Count} máy thành công! Đang chờ chi nhánh nhận xác nhận.";
+            return RedirectToAction(nameof(TransferStock));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReceiveTransfer(int transferId)
+        {
+            var transfer = await _context.ImeiTransfers
+                .Include(t => t.DeviceImei)
+                .FirstOrDefaultAsync(t => t.Id == transferId);
+
+            if (transfer != null && transfer.Status == "Pending")
+            {
+                transfer.Status = "Completed"; // Phiếu hoàn tất
+                transfer.ReceiveDate = DateTime.Now; // Chốt giờ nhận
+
+                if (transfer.DeviceImei != null)
+                {
+                    transfer.DeviceImei.BranchId = transfer.ToBranchId; // Đổi hộ khẩu máy sang chi nhánh mới
+                    transfer.DeviceImei.Status = "Available"; // Rã đông: Sẵn sàng bán tại chi nhánh mới
+                }
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"✅ Đã NHẬN HÀNG thành công! Mã IMEI: {transfer.DeviceImei?.Imei} đã được đưa vào kho của bạn.";
+            }
+            return RedirectToAction(nameof(TransferStock));
         }
 
     }

@@ -1,82 +1,52 @@
-﻿@model IEnumerable<PhoneStore.Models.Inventory>
+﻿@model IEnumerable<PhoneStore.Controllers.InventoryStatVM>
 @{
-    ViewData["Title"] = "Quản lý Tồn kho Toàn quốc";
+    ViewData["Title"] = "Quản lý Kho Tổng Hệ Thống";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-primary"><i class="fa fa-boxes me-2"></i>Tồn kho Toàn hệ thống</h2>
-</div>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success fw-bold shadow-sm alert-dismissible fade show" role="alert">
-        <i class="fa fa-check-circle me-2"></i> @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="container-fluid px-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <h2 class="fw-bolder text-dark mb-0"><i class="fa fa-warehouse text-success me-2"></i>Giám Sát Kho Tổng Toàn Hệ Thống</h2>
+        <div class="badge bg-success bg-opacity-10 text-success px-4 py-2 fs-6 rounded-pill border border-success border-opacity-25 shadow-sm">
+            Tổng tài sản: <span class="fw-bolder">@Model.Sum(m => m.AvailableCount) máy</span>
+        </div>
     </div>
-}
 
-<div class="card shadow border-0 mb-4 bg-light">
-    <div class="card-body">
-        <form asp-action="ManageInventory" method="get" class="row align-items-end">
-            <div class="col-md-5">
-                <label class="form-label fw-bold text-muted">Lọc theo chi nhánh</label>
-                <select name="branchId" class="form-select border-primary" asp-items="ViewBag.Branches" onchange="this.form.submit()">
-                    <option value="">-- Hiển thị Tất cả chi nhánh --</option>
-                </select>
-            </div>
-            <div class="col-md-7 text-end">
-                <span class="badge bg-primary fs-6 py-2 px-3">
-                    Đang hiển thị: @Model.Count() bản ghi tồn kho
-                </span>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="card shadow border-0">
-    <div class="card-body p-0">
-        <div class="table-responsive">
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark"><i class="fa fa-list me-2 text-info"></i>Phân bổ thiết bị theo Chi nhánh</h5>
+        </div>
+        <div class="card-body p-0">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
+                <thead class="table-light">
                     <tr>
-                        <th class="ps-4">Chi nhánh</th>
-                        <th>Sản phẩm</th>
-                        <th class="text-center" style="width: 250px;">Số lượng kho</th>
+                        <th class="ps-4">CHI NHÁNH SỞ HỮU</th>
+                        <th>DÒNG ĐIỆN THOẠI</th>
+                        <th class="text-center">SỐ LƯỢNG TỒN</th>
+                        <th class="text-center">ĐÁNH GIÁ MỨC TỒN</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (!Model.Any())
                     {
-                        <tr>
-                            <td colspan="3" class="text-center py-5 text-muted">Không có dữ liệu tồn kho.</td>
-                        </tr>
+                        <tr><td colspan="4" class="text-center py-5 fw-bold text-danger">Toàn bộ hệ thống đang hết hàng.</td></tr>
                     }
                     else
                     {
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark"><i class="fa fa-store text-muted me-2"></i>@item.Branch?.Name</span>
-                                </td>
-                                <td>
-                                    <div class="fw-bold text-primary">@item.Product?.Name</div>
-                                    <small class="text-muted">Mã SP: #@item.ProductId</small>
-                                </td>
-                                <td class="text-center pe-4">
-                                    <form asp-action="UpdateStock" method="post" class="d-inline-flex">
-                                        <input type="hidden" name="inventoryId" value="@item.Id" />
-                                        <input type="hidden" name="filterBranchId" value="@ViewBag.CurrentBranchId" />
-                                        
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" name="newQuantity" class="form-control text-center fw-bold" value="@item.StockQuantity" min="0" style="width: 70px;">
-                                            <button type="submit" class="btn btn-outline-success fw-bold">Lưu</button>
-                                        </div>
-                                    </form>
-                                    @if (item.StockQuantity <= 5)
+                                <td class="ps-4 fw-bold text-dark"><i class="fa fa-store text-muted me-2"></i>@item.BranchName</td>
+                                <td class="text-primary fw-semibold">@item.ProductName</td>
+                                <td class="text-center fs-5 fw-bolder">@item.AvailableCount</td>
+                                <td class="text-center">
+                                    @if (item.AvailableCount <= 3)
                                     {
-                                        <div class="text-danger small fw-bold mt-1"><i class="fa fa-exclamation-triangle me-1"></i>Sắp hết hàng</div>
+                                        <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm"><i class="fa fa-exclamation-circle me-1"></i>Sắp hết hàng</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm"><i class="fa fa-check me-1"></i>An toàn</span>
                                     }
                                 </td>
                             </tr>

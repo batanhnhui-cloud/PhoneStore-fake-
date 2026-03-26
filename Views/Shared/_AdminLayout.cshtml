@@ -3,78 +3,73 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Workspace PhoneStore</title>
+    <title>@ViewData["Title"] - Hệ thống Quản trị</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <style>
-        .sidebar { background: #0f172a; min-height: 100vh; width: 260px; transition: 0.3s; }
-        .sidebar .nav-link { color: #94a3b8; font-weight: 500; padding: 12px 24px; border-radius: 0 20px 20px 0; margin-right: 15px; margin-bottom: 5px;}
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: #fff; }
-        .section-title { font-size: 0.7rem; color: #64748b; font-weight: 700; letter-spacing: 1.5px; margin: 20px 0 10px 24px; text-transform: uppercase;}
-        .main-content { background-color: #f8fafc; min-height: 100vh; }
-        .admin-header { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        body { background-color: #f8f9fa; }
+        .sidebar { min-height: 100vh; background: #212529; color: #fff; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .sidebar a { color: rgba(255,255,255,0.8); text-decoration: none; padding: 12px 20px; display: block; font-weight: 500; border-radius: 8px; margin: 4px 12px; transition: all 0.3s; }
+        .sidebar a:hover, .sidebar a.active { background: #0d6efd; color: #fff; transform: translateX(5px); }
+        .sidebar .nav-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #6c757d; padding: 15px 20px 5px; font-weight: bold; }
+        .main-content { padding: 30px; }
     </style>
 </head>
 <body>
     <div class="d-flex">
-        <nav class="sidebar flex-column shadow-lg">
-            <div class="p-4 text-white">
-                <h4 class="fw-bold mb-1"><i class="fa fa-boxes me-2 text-info"></i>Workspace</h4>
-                <div class="badge bg-primary bg-opacity-25 text-info mt-2 px-3 py-2 rounded-pill fw-bold border border-info border-opacity-25">
-                    <i class="fa fa-circle text-success me-2" style="font-size: 8px;"></i>@(User.IsInRole("Admin") ? "QUẢN TRỊ VIÊN" : "NHÂN VIÊN")
-                </div>
+        <nav class="sidebar flex-shrink-0" style="width: 280px;">
+            <div class="text-center py-4 border-bottom border-secondary">
+                <h3 class="fw-bolder text-white mb-0"><i class="fa fa-apple-alt text-primary me-2"></i>PhoneStore</h3>
+                <p class="text-muted small mb-0 mt-1">Hệ Thống Quản Trị ERP</p>
             </div>
-            
-            <ul class="nav flex-column mt-2">
-                @if (User.IsInRole("Admin")) 
-                {
-                    <div class="section-title">Tổng quan Hệ thống</div>
-                    <li class="nav-item"><a class="nav-link text-white" asp-controller="Admin" asp-action="Dashboard"><i class="fa fa-chart-pie me-3"></i>Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="OrderManagement"><i class="fa fa-shopping-cart me-3"></i>Đơn hàng Toàn quốc</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="ManageInventory"><i class="fa fa-warehouse me-3"></i>Kho hàng Tổng</a></li>
-                    
-                    <div class="section-title">Kinh doanh & Vận hành</div>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="RevenueReport"><i class="fa fa-chart-line me-3"></i>Báo cáo Doanh thu</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="ManageCustomers"><i class="fa fa-users me-3"></i>Khách hàng (CRM)</a></li>
-                    
-                    <div class="section-title">Cấu hình Hệ thống</div>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="ManageBranches"><i class="fa fa-store-alt me-3"></i>Chi nhánh</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="ManageStaff"><i class="fa fa-user-shield me-3"></i>Nhân sự</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Category" asp-action="Index"><i class="fa fa-tags me-3"></i>Hãng máy</a></li>
-                }
-                
-                <div class="section-title">Quản lý Sản phẩm</div>
-                <li class="nav-item"><a class="nav-link" asp-controller="Product" asp-action="Index"><i class="fa fa-mobile-alt me-3"></i>Danh mục Máy</a></li>
 
-                @if (User.IsInRole("Staff"))
+            <div class="mt-3">
+                @if (User.IsInRole("Admin"))
                 {
-                    <div class="section-title">Nghiệp vụ Tại quầy</div>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Staff" asp-action="POS"><i class="fa fa-cash-register me-3"></i>Bán hàng POS</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Staff" asp-action="OrderManagement"><i class="fa fa-clipboard-list me-3"></i>Xử lý Đơn Online</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Staff" asp-action="Inventory"><i class="fa fa-box-open me-3"></i>Kho hàng Cục bộ</a></li>
+                    <div class="nav-title">BẢNG ĐIỀU KHIỂN GIÁM ĐỐC</div>
+                    <a asp-controller="Admin" asp-action="Dashboard"><i class="fa fa-chart-pie fa-fw me-2"></i>Tổng quan Doanh thu</a>
+                    <a asp-controller="Admin" asp-action="ManageInventory"><i class="fa fa-warehouse fa-fw me-2"></i>Kho Tổng Hệ Thống</a>
+                    
+                    <div class="nav-title mt-2">QUẢN LÝ DANH MỤC</div>
+                    <a asp-controller="Product" asp-action="Index"><i class="fa fa-mobile-alt fa-fw me-2"></i>Sản phẩm & Giá</a>
+                    <a asp-controller="Admin" asp-action="ManageBranches"><i class="fa fa-store fa-fw me-2"></i>Hệ thống Chi nhánh</a>
+                    <a asp-controller="Admin" asp-action="ManageStaff"><i class="fa fa-users-cog fa-fw me-2"></i>Tài khoản Nhân viên</a>
                 }
-            </ul>
-        </nav>
-        
-        <div class="flex-grow-1 main-content">
-            <header class="admin-header p-3 d-flex justify-content-between align-items-center sticky-top px-4">
-                <div class="fw-bold text-dark fs-5">
-                    Xin chào, <span class="text-primary">@User.Identity?.Name?.Split('@')[0]</span> 👋
-                </div>
-                <div class="d-flex align-items-center gap-3">
-                    <a href="/" class="btn btn-light rounded-pill px-4 fw-bold shadow-sm border"><i class="fa fa-globe me-2 text-primary"></i> Xem Website</a>
-                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="m-0">
-                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm"><i class="fa fa-power-off"></i></button>
-                    </form>
-                </div>
-            </header>
-            
-            <div class="p-4 p-md-5">
-                @RenderBody()
+
+                <div class="nav-title mt-2">NGHIỆP VỤ BÁN HÀNG</div>
+                <a asp-controller="Staff" asp-action="POS"><i class="fa fa-cash-register fa-fw me-2 text-success"></i>Bán hàng (POS)</a>
+                <a asp-controller="Staff" asp-action="OrderManagement"><i class="fa fa-shopping-cart fa-fw me-2"></i>Xử lý Đơn Online</a>
+
+                <div class="nav-title mt-2">NGHIỆP VỤ KHO BÃI</div>
+                <a asp-controller="Staff" asp-action="Inventory"><i class="fa fa-boxes fa-fw me-2 text-info"></i>Tồn kho Chi nhánh</a>
+                <a asp-controller="Staff" asp-action="ImportImei"><i class="fa fa-barcode fa-fw me-2"></i>Nhập kho IMEI</a>
+                <a asp-controller="Staff" asp-action="TransferStock"><i class="fa fa-truck-moving fa-fw me-2 text-warning"></i>Điều chuyển kho</a>
+
+                <div class="nav-title mt-2">HỆ THỐNG</div>
+                <a asp-controller="Home" asp-action="Index"><i class="fa fa-globe fa-fw me-2"></i>Xem Cửa Hàng (Web)</a>
+                
+                <form asp-controller="Account" asp-action="Logout" method="post" class="mt-4 px-3">
+                    <button type="submit" class="btn btn-outline-danger w-100 fw-bold rounded-pill">
+                        <i class="fa fa-sign-out-alt me-2"></i>Đăng xuất
+                    </button>
+                </form>
             </div>
-        </div>
+        </nav>
+
+        <main class="flex-grow-1 main-content bg-light overflow-auto" style="height: 100vh;">
+            <div class="d-flex justify-content-end align-items-center mb-4 pb-3 border-bottom">
+                <div class="d-flex align-items-center bg-white px-4 py-2 rounded-pill shadow-sm">
+                    <img src="https://ui-avatars.com/api/?name=@(User.Identity.Name)&background=0D8ABC&color=fff" class="rounded-circle me-2" style="width: 32px; height: 32px;" alt="Avatar">
+                    <span class="fw-bold text-dark">Xin chào, @User.Identity.Name?.Split('@')[0]</span>
+                    <span class="badge bg-primary ms-3">@(User.IsInRole("Admin") ? "Giám đốc" : "Nhân viên")</span>
+                </div>
+            </div>
+
+            @RenderBody()
+        </main>
     </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)

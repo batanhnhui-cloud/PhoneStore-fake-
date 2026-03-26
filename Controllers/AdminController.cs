@@ -31,46 +31,26 @@ namespace PhoneStore.Controllers
         // ==========================================
         public async Task<IActionResult> Dashboard()
         {
+            // Doanh thu (Chỉ tính đơn Success)
             ViewBag.TotalRevenue = await _context.Orders.Where(o => o.Status == "Success").SumAsync(o => o.TotalAmount);
-            ViewBag.TotalOrders = await _context.Orders.CountAsync(o => o.Status == "Success");
 
-            var admins = await _userManager.GetUsersInRoleAsync("Admin");
-            var staffs = await _userManager.GetUsersInRoleAsync("Staff");
-            var excludeIds = admins.Select(u => u.Id).Union(staffs.Select(u => u.Id)).ToList();
+            // Tổng đơn hàng
+            ViewBag.TotalOrders = await _context.Orders.CountAsync();
 
-            ViewBag.TotalUsers = await _userManager.Users.CountAsync(u => !excludeIds.Contains(u.Id));
+            // TỔNG MÁY TRONG KHO (Đếm chính xác từng mã IMEI đang rảnh)
+            ViewBag.TotalDevices = await _context.DeviceImeis.CountAsync(d => d.Status == "Available");
 
-            ViewBag.LowStockItems = await _context.Inventories
-                .Include(i => i.Product).Include(i => i.Branch)
-                // ĐÃ SỬA: Bỏ điều kiện > 0 để hệ thống quét trúng cả các máy đang bằng 0 (Hết hàng)
-                .Where(i => i.StockQuantity <= 5)
-                .OrderBy(i => i.StockQuantity).Take(10).ToListAsync();
+            // Tổng số chi nhánh
+            ViewBag.TotalBranches = await _context.Branches.CountAsync();
 
-            ViewBag.TopProducts = await _context.OrderDetails
-                .Include(od => od.Order).Include(od => od.Product)
-                .Where(od => od.Order.Status == "Success")
-                .GroupBy(od => new { od.ProductId, od.Product.Name })
-                .Select(g => new TopProductVM
-                {
-                    ProductName = g.Key.Name,
-                    TotalSold = g.Sum(od => od.Quantity),
-                    TotalRevenue = g.Sum(od => od.Quantity * od.Price)
-                }).OrderByDescending(x => x.TotalSold).Take(5).ToListAsync();
+            // Lấy 5 đơn hàng gần nhất
+            var recentOrders = await _context.Orders
+                .Include(o => o.Branch)
+                .OrderByDescending(o => o.OrderDate)
+                .Take(5)
+                .ToListAsync();
 
-            var last7Days = Enumerable.Range(0, 7).Select(i => DateTime.Today.AddDays(-i)).Reverse().ToList();
-            ViewBag.ChartLabels = last7Days.Select(d => d.ToString("dd/MM")).ToList();
-
-            var chartData = new List<decimal>();
-            foreach (var date in last7Days)
-            {
-                var dailyRevenue = await _context.Orders
-                    .Where(o => o.Status == "Success" && o.OrderDate.Date == date)
-                    .SumAsync(o => o.TotalAmount);
-                chartData.Add(dailyRevenue);
-            }
-            ViewBag.ChartData = chartData;
-
-            return View();
+            return View(recentOrders);
         }
 
         // ==========================================
@@ -118,16 +98,25 @@ namespace PhoneStore.Controllers
         // ==========================================
         // 2. QUẢN LÝ TỒN KHO TOÀN QUỐC
         // ==========================================
-        public async Task<IActionResult> ManageInventory(int? branchId)
+        public async Task<IActionResult> ManageInventory()
         {
-            ViewBag.Branches = new SelectList(await _context.Branches.ToListAsync(), "Id", "Name", branchId);
-            ViewBag.CurrentBranchId = branchId;
+            // Gom nhóm tất cả mã IMEI Sẵn sàng bán theo từng Chi nhánh và Sản phẩm
+            // (Sử dụng lại class InventoryStatVM đã tạo bên StaffController cho tiện)
+            var stats = await _context.DeviceImeis
+                .Include(d => d.Product)
+                .Include(d => d.Branch)
+                .Where(d => d.Status == "Available")
+                .GroupBy(d => new { d.BranchId, BranchName = d.Branch!.Name, d.ProductId, ProductName = d.Product!.Name })
+                .Select(g => new PhoneStore.Controllers.InventoryStatVM
+                {
+                    BranchName = g.Key.BranchName,
+                    ProductName = g.Key.ProductName,
+                    AvailableCount = g.Count()
+                })
+                .OrderBy(x => x.BranchName).ThenBy(x => x.ProductName)
+                .ToListAsync();
 
-            var query = _context.Inventories.Include(i => i.Product).Include(i => i.Branch).AsQueryable();
-            if (branchId.HasValue) query = query.Where(i => i.BranchId == branchId.Value);
-
-            var inventoryList = await query.OrderBy(i => i.Branch.Name).ThenBy(i => i.Product.Name).ToListAsync();
-            return View(inventoryList);
+            return View(stats);
         }
 
         [HttpPost]

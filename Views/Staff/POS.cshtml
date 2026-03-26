@@ -1,132 +1,69 @@
 ﻿@{
-    ViewData["Title"] = "Bán hàng tại quầy (POS)";
+    ViewData["Title"] = "Bán Hàng Tại Quầy (POS)";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    var inventory = ViewBag.Inventory as List<PhoneStore.Models.Inventory>;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-success"><i class="fa fa-cash-register me-2"></i>Hệ thống Bán hàng (POS)</h2>
-    <span class="badge bg-primary fs-6">Chi nhánh của bạn</span>
-</div>
+<div class="container-fluid px-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <h2 class="fw-bolder text-dark mb-0"><i class="fa fa-cash-register text-success me-2"></i>Bán Hàng Tại Quầy (POS)</h2>
+    </div>
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger fw-bold shadow-sm">@TempData["ErrorMessage"]</div>
-}
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success fw-bold shadow-sm rounded-3 fs-5 py-3 border-0"><i class="fa fa-check-circle me-2"></i> @TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger fw-bold shadow-sm rounded-3 border-0"><i class="fa fa-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]</div>
+    }
 
-<div class="row">
-    <div class="col-md-8 mb-4">
-        <div class="card shadow border-0 h-100">
-            <div class="card-header bg-dark text-white fw-bold py-3">
-                <i class="fa fa-mobile-alt me-2"></i>Sản phẩm có sẵn tại cửa hàng
+    <form asp-action="POS" method="post">
+        <div class="row">
+            <div class="col-md-5 mb-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold text-dark"><i class="fa fa-user-tag text-primary me-2"></i>Thông tin Giao dịch</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">CỬA HÀNG ĐANG GIAO DỊCH <span class="text-danger">*</span></label>
+                            <select name="branchId" class="form-select shadow-sm border-0 bg-light" asp-items="ViewBag.Branches" required>
+                                <option value="">-- Chọn Cửa hàng / Chi nhánh --</option>
+                            </select>
+                        </div>
+                        <hr class="my-4" />
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">TÊN KHÁCH HÀNG</label>
+                            <input type="text" name="customerName" class="form-control shadow-sm border-0 bg-light" placeholder="Nhập tên khách (hoặc để trống nếu là khách lẻ)" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">SỐ ĐIỆN THOẠI</label>
+                            <input type="text" name="phone" class="form-control shadow-sm border-0 bg-light" placeholder="Nhập số điện thoại để lưu bảo hành..." />
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light sticky-top">
-                            <tr>
-                                <th class="ps-4">Sản phẩm</th>
-                                <th>Giá bán</th>
-                                <th class="text-center">Tồn kho</th>
-                                <th class="text-center pe-4">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (inventory == null || !inventory.Any())
-                            {
-                                <tr><td colspan="4" class="text-center py-5 text-muted">Kho của chi nhánh hiện đang trống.</td></tr>
-                            }
-                            else
-                            {
-                                foreach (var item in inventory)
-                                {
-                                    <tr>
-                                        <td class="ps-4 fw-bold text-primary">@item.Product?.Name</td>
-                                        <td class="text-danger fw-bold">@item.Product?.Price.ToString("N0") đ</td>
-                                        <td class="text-center"><span class="badge bg-secondary">@item.StockQuantity</span></td>
-                                        <td class="text-center pe-4">
-                                            <button type="button" class="btn btn-sm btn-outline-success fw-bold select-btn"
-                                                    data-id="@item.ProductId"
-                                                    data-name="@item.Product?.Name"
-                                                    data-price="@item.Product?.Price"
-                                                    data-max="@item.StockQuantity">
-                                                CHỌN
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
+
+            <div class="col-md-7 mb-4">
+                <div class="card shadow-sm border-0 rounded-4 border-top border-success border-5 h-100">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold text-dark"><i class="fa fa-barcode text-success me-2"></i>Quét IMEI Sản Phẩm <span class="text-danger">*</span></h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted small mb-2">
+                            <i class="fa fa-lightbulb text-warning me-1"></i>
+                            <strong>Mẹo thu ngân:</strong> Cầm súng quét mã vạch và bắn liên tục vào hộp các sản phẩm khách mua. Hệ thống sẽ tự động tính tiền và xuất kho.
+                        </p>
+                        <textarea name="scannedImeis" class="form-control shadow-sm bg-light border-0 font-monospace fs-4 text-success fw-bold p-3" rows="6" placeholder="Nhập mã Imei" required></textarea>
+                        
+                        <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 fw-bold shadow-lg">
+                                <i class="fa fa-print me-2"></i> THANH TOÁN & IN BILL
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="col-md-4 mb-4">
-        <div class="card shadow border-0 h-100 bg-light">
-            <div class="card-header bg-success text-white fw-bold py-3">
-                <i class="fa fa-receipt me-2"></i>Lập hóa đơn
-            </div>
-            <div class="card-body">
-                <form asp-action="CheckoutPOS" method="post" id="posForm">
-                    <div class="alert alert-info border-0 shadow-sm d-none" id="selectedProductAlert">
-                        <h6 class="fw-bold mb-1" id="spName">Tên máy</h6>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <span class="text-danger fw-bold" id="spPrice">0 đ</span>
-                            <div class="input-group input-group-sm" style="width: 100px;">
-                                <span class="input-group-text bg-white">SL</span>
-                                <input type="number" name="quantity" id="spQuantity" class="form-control text-center" value="1" min="1" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <input type="hidden" name="productId" id="hiddenProductId" required />
-
-                    <hr />
-                    
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Tên khách hàng</label>
-                        <input type="text" name="customerName" class="form-control" placeholder="Tên người mua..." required />
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Số điện thoại</label>
-                        <input type="text" name="phone" class="form-control" placeholder="09xxxxxxxxx" required />
-                    </div>
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-success fw-bold py-3 fs-5" id="btnCheckout" disabled>
-                            <i class="fa fa-check-circle me-2"></i> THANH TOÁN
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    </form>
 </div>
-
-@section Scripts {
-    <script>
-        // Xử lý khi nhân viên bấm nút "CHỌN" một máy
-        $('.select-btn').click(function () {
-            var id = $(this).data('id');
-            var name = $(this).data('name');
-            var price = $(this).data('price');
-            var max = $(this).data('max');
-
-            // Cập nhật giao diện bên giỏ hàng
-            $('#spName').text(name);
-            $('#spPrice').text(price.toLocaleString('vi-VN') + ' đ');
-            $('#spQuantity').attr('max', max);
-            $('#spQuantity').val(1);
-            
-            // Điền vào form ẩn
-            $('#hiddenProductId').val(id);
-            
-            // Hiện giỏ hàng và bật nút Thanh toán
-            $('#selectedProductAlert').removeClass('d-none');
-            $('#btnCheckout').removeAttr('disabled');
-        });
-    </script>
-}
