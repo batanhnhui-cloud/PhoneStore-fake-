@@ -135,6 +135,34 @@ namespace PhoneStore.Controllers
             return View(orders);
         }
 
+        // HÀM TRA CỨU IMEI ĐỘC LẬP
+        [HttpGet]
+        public async Task<IActionResult> TrackImei(string imei)
+        {
+            // Lưu lại số IMEI khách vừa nhập để hiển thị lại lên ô tìm kiếm
+            ViewBag.CurrentImei = imei;
+
+            if (string.IsNullOrWhiteSpace(imei))
+            {
+                return View(); // Trả về trang Tra cứu rỗng
+            }
+
+            // Tìm cái đơn hàng có chứa mã IMEI này, lấy luôn thông tin Sản phẩm (Product)
+            var order = await _context.Orders
+                .Include(o => o.DeviceImeis)
+                    .ThenInclude(d => d.Product)
+                .FirstOrDefaultAsync(o => o.DeviceImeis.Any(d => d.Imei == imei.Trim()));
+
+            if (order == null)
+            {
+                ViewBag.Error = $"Mã IMEI '{imei}' không tồn tại hoặc chưa được kích hoạt bảo hành tại SunMobile.";
+                return View();
+            }
+
+            // Trả về thẳng giao diện TrackImei (không nhảy sang TrackOrder nữa)
+            return View(order);
+        }
+
         public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

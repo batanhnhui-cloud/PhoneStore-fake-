@@ -1,0 +1,104 @@
+﻿@model PhoneStore.Models.Order
+@{
+    ViewData["Title"] = "Tra cứu Bảo hành IMEI - SunMobile";
+    
+    // Tìm đúng cái máy có IMEI khớp với ô tìm kiếm
+    var searchedImei = ViewBag.CurrentImei as string;
+    var targetDevice = Model?.DeviceImeis?.FirstOrDefault(d => d.Imei == searchedImei);
+}
+
+<style>
+    body { background-color: #fcfcfc; }
+    
+    .track-header { text-align: center; margin: 40px 0; }
+    
+    .search-box { max-width: 600px; margin: 0 auto; position: relative; }
+    .search-input {
+        width: 100%; padding: 18px 25px; border-radius: 15px; border: 2px solid #eee;
+        font-size: 1.1rem; transition: all 0.3s ease; text-align: center; letter-spacing: 2px; font-weight: 600;
+    }
+    .search-input:focus { outline: none; border-color: #f97316; box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1); }
+    .btn-search {
+        background: #1d1d1f; color: #fff; border: none; padding: 15px; border-radius: 12px;
+        font-weight: 700; font-size: 1.1rem; width: 100%; transition: 0.3s; margin-top: 15px;
+    }
+    .btn-search:hover { background: #f97316; transform: translateY(-2px); }
+
+    /* THẺ KẾT QUẢ BẢO HÀNH */
+    .warranty-card {
+        background: #fff; border-radius: 24px; padding: 40px; margin-top: 40px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;
+    }
+    .status-badge {
+        display: inline-block; padding: 8px 16px; border-radius: 30px; font-weight: 700; font-size: 0.85rem;
+    }
+    .status-active { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+    .status-expired { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+</style>
+
+<div class="container pb-5">
+    <div class="track-header">
+        <h2 class="display-6 fw-bold text-dark mb-2">Tra Cứu Bảo Hành</h2>
+        <p class="text-muted">Nhập mã số IMEI gồm 15 chữ số để kiểm tra thời hạn bảo hành.</p>
+    </div>
+
+    <div class="search-box">
+        <form asp-controller="Home" asp-action="TrackImei" method="get">
+            <input type="text" name="imei" value="@searchedImei" class="search-input shadow-sm" placeholder="Ví dụ: 351234567890123" required maxlength="15">
+            <button type="submit" class="btn-search shadow-sm">Kiểm tra ngay</button>
+        </form>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger mt-4 text-center rounded-4 border-0 shadow-sm fw-bold">
+                <i class="fa fa-exclamation-circle me-2"></i> @ViewBag.Error
+            </div>
+        }
+    </div>
+
+    @if (Model != null && targetDevice != null)
+    {
+        var isWarrantyActive = targetDevice.WarrantyExpirationDate >= DateTime.Now;
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="warranty-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center mb-4 mb-md-0 border-end">
+                            <img src="@(string.IsNullOrEmpty(targetDevice.Product?.ImageUrl) ? "https://via.placeholder.com/200x200?text=SunMobile" : targetDevice.Product?.ImageUrl)" 
+                                 class="img-fluid" style="max-height: 180px;" alt="Phone">
+                        </div>
+                        
+                        <div class="col-md-8 ps-md-5">
+                            <h4 class="fw-bold text-dark mb-1">@targetDevice.Product?.Name</h4>
+                            <p class="text-muted mb-4">Mã IMEI: <strong class="text-dark fs-5 ms-1">@targetDevice.Imei</strong></p>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-6">
+                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Ngày kích hoạt</small>
+                                    <span class="fw-bold text-dark">@(targetDevice.WarrantyActivationDate?.ToString("dd/MM/yyyy") ?? "Chưa kích hoạt")</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Ngày hết hạn</small>
+                                    <span class="fw-bold text-dark">@(targetDevice.WarrantyExpirationDate?.ToString("dd/MM/yyyy") ?? "Chưa rõ")</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                                <span class="fw-bold text-muted">Trạng thái bảo hành:</span>
+                                @if (isWarrantyActive)
+                                {
+                                    <span class="status-badge status-active"><i class="fa fa-check-circle me-1"></i> ĐANG BẢO HÀNH</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-expired"><i class="fa fa-times-circle me-1"></i> ĐÃ HẾT HẠN</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
