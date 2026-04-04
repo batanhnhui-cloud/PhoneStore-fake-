@@ -11,5 +11,6 @@ namespace PhoneStore.Models
         public int CategoryId { get; set; }
         public virtual Category? Category { get; set; }
         public virtual ICollection<DeviceImei> DeviceImeis { get; set; } = new List<DeviceImei>();
+        public string? Specifications { get; set; }
     }
 }

@@ -1,28 +1,133 @@
-﻿@model PhoneStore.Models.Product
+﻿@using System.Text.Json
+@model PhoneStore.Models.Product
 @{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Chỉnh sửa sản phẩm - SunMobile";
+    Dictionary<string, List<string>> currentSpecs = new Dictionary<string, List<string>>();
+    if (!string.IsNullOrEmpty(Model.Specifications))
+    {
+        try
+        {
+            using (JsonDocument doc = JsonDocument.Parse(Model.Specifications))
+            {
+                foreach (var element in doc.RootElement.EnumerateObject())
+                {
+                    var list = new List<string>();
+                    if (element.Value.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var item in element.Value.EnumerateArray()) list.Add(item.GetString());
+                    }
+                    else list.Add(element.Value.GetString());
+                    currentSpecs.Add(element.Name, list);
+                }
+            }
+        }
+        catch { }
+    }
 }
-<h2 class="fw-bold text-primary mb-4">Sửa thông tin Điện thoại</h2>
-<div class="card shadow border-0 p-4" style="max-width: 600px;">
-    <form asp-action="Edit" method="post">
-        <input type="hidden" asp-for="Id" />
-        <div class="mb-3">
-            <label class="form-label fw-bold">Tên sản phẩm</label>
-            <input asp-for="Name" class="form-control" required />
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-dark text-white rounded-top-4 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fa fa-edit me-2"></i>Cập nhật sản phẩm</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" enctype="multipart/form-data" id="productForm">
+                        <input type="hidden" asp-for="Id" /><input type="hidden" asp-for="ImageUrl" />
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6"><label asp-for="Name" class="form-label fw-bold">Tên sản phẩm</label><input asp-for="Name" class="form-control" required /></div>
+                            <div class="col-md-6"><label asp-for="Price" class="form-label fw-bold">Giá bán</label><input asp-for="Price" type="number" class="form-control" required /></div>
+                            <div class="col-md-6"><label asp-for="CategoryId" class="form-label fw-bold">Hãng</label><select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories"></select></div>
+                            <div class="col-md-6"><label class="form-label fw-bold">Đổi ảnh mới</label><input type="file" name="ImageFile" class="form-control" accept="image/*" /></div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="card border-primary mb-4 shadow-sm">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between py-2"><span class="small fw-bold">NHẬP NHANH</span><button type="button" class="btn btn-sm btn-light py-0" onclick="toggleQuickInput()">Ẩn/Hiện</button></div>
+                            <div class="card-body" id="quickInputArea"><textarea id="rawSpecs" class="form-control mb-2" rows="3"></textarea><button type="button" class="btn btn-success btn-sm w-100 fw-bold" id="btnProcessRaw">TRÍCH XUẤT</button></div>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label fw-bold text-dark">Thông số kỹ thuật</label>
+                            <input type="hidden" asp-for="Specifications" id="SpecificationsData" />
+                            <div id="specifications-container" class="p-3 bg-light rounded-3 border">
+                                @if (currentSpecs.Count > 0)
+                                {
+                                    foreach (var spec in currentSpecs)
+                                    {
+                                        foreach (var val in spec.Value)
+                                        {
+                                            <div class="row g-2 mb-2 spec-row">
+                                                <div class="col-4"><input type="text" class="form-control spec-key" value="@spec.Key"></div>
+                                                <div class="col-7"><textarea class="form-control spec-value" rows="2">@val</textarea></div>
+                                                <div class="col-1 text-end"><button type="button" class="btn btn-outline-danger btn-remove-spec"><i class="fa fa-times"></i></button></div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-dark mt-3 fw-bold" id="btnAddSpec">+ Thêm dòng</button>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-5">
+                            <a asp-action="Index" class="btn btn-secondary px-4">Hủy</a>
+                            <button type="submit" class="btn btn-dark px-5 fw-bold">Cập nhật</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label fw-bold">Hãng</label>
-            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories"></select>
-        </div>
-        <div class="mb-3">
-            <label class="form-label fw-bold">Giá bán</label>
-            <input asp-for="Price" type="number" class="form-control" required />
-        </div>
-        <div class="mb-3">
-            <label class="form-label fw-bold">Link ảnh</label>
-            <input asp-for="ImageUrl" class="form-control" />
-        </div>
-        <button type="submit" class="btn btn-primary fw-bold w-100 py-2">LƯU THAY ĐỔI</button>
-        <a asp-action="Index" class="btn btn-link w-100 mt-2">Hủy bỏ</a>
-    </form>
+    </div>
 </div>
+
+<script>
+    document.getElementById('btnAddSpec').addEventListener('click', function () {
+        const container = document.getElementById('specifications-container');
+        const newRow = document.createElement('div');
+        newRow.className = 'row g-2 mb-2 spec-row';
+        newRow.innerHTML = `<div class="col-4"><input type="text" class="form-control spec-key" placeholder="Tên thông số"></div><div class="col-7"><textarea class="form-control spec-value" rows="2"></textarea></div><div class="col-1 text-end"><button type="button" class="btn btn-outline-danger btn-remove-spec"><i class="fa fa-times"></i></button></div>`;
+        container.appendChild(newRow);
+    });
+
+    document.getElementById('specifications-container').addEventListener('click', function (e) {
+        if (e.target.closest('.btn-remove-spec')) e.target.closest('.spec-row').remove();
+    });
+
+    document.getElementById('btnProcessRaw').addEventListener('click', function () {
+        const rawText = document.getElementById('rawSpecs').value.trim();
+        if (!rawText) return;
+        const container = document.getElementById('specifications-container');
+        rawText.split('\n').forEach(line => {
+            const sep = line.includes(':') ? ':' : (line.includes('-') ? '-' : null);
+            if (sep) {
+                const parts = line.split(sep);
+                const k = parts[0].trim(), v = parts.slice(1).join(sep).trim();
+                if (k && v) {
+                    const row = document.createElement('div');
+                    row.className = 'row g-2 mb-2 spec-row';
+                    row.innerHTML = `<div class="col-4"><input type="text" class="form-control spec-key" value="${k}"></div><div class="col-7"><textarea class="form-control spec-value" rows="2">${v}</textarea></div><div class="col-1 text-end"><button type="button" class="btn btn-outline-danger btn-remove-spec"><i class="fa fa-times"></i></button></div>`;
+                    container.appendChild(row);
+                }
+            }
+        });
+        document.getElementById('rawSpecs').value = "";
+    });
+
+    document.getElementById('productForm').addEventListener('submit', function () {
+        const obj = {};
+        document.querySelectorAll('.spec-row').forEach(row => {
+            const k = row.querySelector('.spec-key').value.trim();
+            const v = row.querySelector('.spec-value').value.trim();
+            if (k && v) { if (!obj[k]) obj[k] = []; obj[k].push(v); }
+        });
+        document.getElementById('SpecificationsData').value = JSON.stringify(obj);
+    });
+
+    function toggleQuickInput() {
+        const el = document.getElementById('quickInputArea');
+        el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+    }
+</script>
